@@ -145,9 +145,6 @@ function createLoadableComponent(loadFn, options) {
         loading: res.loading,
         loaded: res.loaded
       };
-    }
-
-    componentWillMount() {
       this._loadModule();
     }
 
@@ -176,7 +173,8 @@ function createLoadableComponent(loadFn, options) {
 
       if (typeof opts.delay === 'number') {
         if (opts.delay === 0) {
-          this.setState({ pastDelay: true });
+        	if (this._mounted) this.setState({ pastDelay: true });
+        	else this.state.pastDelay = true
         } else {
           this._delay = setTimeout(() => {
             setStateWithMountCheck({ pastDelay: true });
