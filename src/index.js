@@ -1,6 +1,4 @@
-"use strict";
 const React = require("react");
-const PropTypes = require("prop-types");
 
 const ALL_INITIALIZERS = [];
 const READY_INITIALIZERS = [];
@@ -148,12 +146,6 @@ function createLoadableComponent(loadFn, options) {
       };
     }
 
-    static contextTypes = {
-      loadable: PropTypes.shape({
-        report: PropTypes.func.isRequired
-      })
-    };
-
     static preload() {
       return init();
     }
@@ -268,16 +260,6 @@ function LoadableMap(opts) {
 Loadable.Map = LoadableMap;
 
 class Capture extends React.Component {
-  static propTypes = {
-    report: PropTypes.func.isRequired
-  };
-
-  static childContextTypes = {
-    loadable: PropTypes.shape({
-      report: PropTypes.func.isRequired
-    }).isRequired
-  };
-
   getChildContext() {
     return {
       loadable: {

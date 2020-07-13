@@ -17,9 +17,7 @@
     "start": "yarn build && webpack --mode=development && babel-node example/server.js",
     "prepare": "yarn build"
   },
-  "dependencies": {
-    "prop-types": "^15.6.2"
-  },
+  "dependencies": {},
   "devDependencies": {
     "@babel/cli": "^7.10.4",
     "@babel/core": "^7.10.4",
