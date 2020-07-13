@@ -14,7 +14,7 @@
   "scripts": {
     "test": "jest --coverage",
     "build": "babel src -d lib",
-    "start": "yarn build && webpack && babel-node example/server.js",
+    "start": "yarn build && webpack --mode=development && babel-node example/server.js",
     "prepare": "yarn build"
   },
   "dependencies": {
@@ -34,13 +34,15 @@
     "babel-loader": "^8.0.4",
     "babel-plugin-dynamic-import-node": "^2.2.0",
     "babel-plugin-module-resolver": "^3.1.1",
+    "babel-plugin-syntax-dynamic-import": "^6.18.0",
     "express": "^4.16.4",
     "flow-bin": "^0.83.0",
     "jest": "^23.6.0",
     "react": "^16.5.2",
     "react-dom": "^16.5.2",
     "react-test-renderer": "^16.5.2",
-    "webpack": "^4.20.2"
+    "webpack": "^4.20.2",
+    "webpack-cli": "^3.3.12"
   },
   "peerDependencies": {
     "react": "*"

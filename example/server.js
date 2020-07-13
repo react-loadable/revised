@@ -5,8 +5,9 @@ import ReactDOMServer from 'react-dom/server';
 import Loadable from 'react-loadable';
 import { getBundles } from 'react-loadable-webpack'
 import App from './components/App';
+import fs from 'fs'
 
-const stats = require('./dist/react-loadable.json');
+const stats = JSON.parse(fs.readFileSync(path.resolve(__dirname, 'dist/react-loadable.json'), 'utf8'));
 const app = express();
 
 app.get('/', (req, res) => {

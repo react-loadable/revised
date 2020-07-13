@@ -43,7 +43,7 @@ module.exports = {
   },
   plugins: [
     new ReactLoadablePlugin({
-      filename:  path.resolve(__dirname, 'example', 'dist', 'react-loadable.json'),
+      filename: 'react-loadable.json'
     }),
   ]
 };
