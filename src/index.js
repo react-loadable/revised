@@ -239,20 +239,17 @@ function createLoadableComponent(loadFn, options) {
     };
 
     render() {
-      if (this.state.loading || this.state.error) {
-        return React.createElement(opts.loading, {
-          isLoading: this.state.loading,
-          pastDelay: this.state.pastDelay,
-          timedOut: this.state.timedOut,
-          error: this.state.error,
-          retry: this.retry
-        });
-      } else if (this.state.loaded) {
-        return opts.render(this.state.loaded, this.props);
-      } else {
-        return null;
-      }
-    }
+      return React.createElement(
+        React.StrictMode,
+        {children: this.state.loading || this.state.error ? React.createElement(opts.loading, {
+            isLoading: this.state.loading,
+            pastDelay: this.state.pastDelay,
+            timedOut: this.state.timedOut,
+            error: this.state.error,
+            retry: this.retry
+          }) : this.state.loaded ? opts.render(this.state.loaded, this.props) : null}
+      )
+    };
   };
 }
 
