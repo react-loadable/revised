@@ -1,9 +1,9 @@
 'use strict';
 
-const path = require('path');
 const React = require('react');
 const renderer = require('react-test-renderer');
 const Loadable = require('../src');
+require('regenerator-runtime')
 
 function waitFor(delay) {
   return new Promise(resolve => {
@@ -272,9 +272,9 @@ describe('preloadReady', () => {
       delay: 0,
       timeout: 200,
     });
-  
+
     let loadingComponent = renderer.create(<LoadableMyComponent prop="foo" />);
-  
+
     expect(loadingComponent.toJSON()).toMatchSnapshot(); // loading
   });
 });
