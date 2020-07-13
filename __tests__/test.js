@@ -1,9 +1,7 @@
-'use strict';
-
-const React = require('react');
-const renderer = require('react-test-renderer');
-const Loadable = require('../src');
-require('regenerator-runtime')
+import React from 'react';
+import renderer from 'react-test-renderer';
+import Loadable from '../src'
+import 'regenerator-runtime'
 
 function waitFor(delay) {
   return new Promise(resolve => {

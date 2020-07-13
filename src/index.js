@@ -294,4 +294,4 @@ Loadable.preloadReady = () => {
   });
 };
 
-module.exports = Loadable;
+export default Loadable
