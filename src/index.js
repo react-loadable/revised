@@ -1,7 +1,8 @@
-const React = require("react");
+import React, {createContext} from 'react'
 
 const ALL_INITIALIZERS = [];
 const READY_INITIALIZERS = [];
+const CaptureContext = createContext()
 
 function isWebpackReady(getModuleIds) {
   if (typeof __webpack_modules__ !== "object") {
@@ -132,7 +133,7 @@ function createLoadableComponent(loadFn, options) {
     });
   }
 
-  return class LoadableComponent extends React.Component {
+  class LoadableComponent extends React.Component {
     constructor(props) {
       super(props);
       init();
@@ -146,10 +147,6 @@ function createLoadableComponent(loadFn, options) {
       };
     }
 
-    static preload() {
-      return init();
-    }
-
     componentWillMount() {
       this._loadModule();
     }
@@ -159,9 +156,9 @@ function createLoadableComponent(loadFn, options) {
     }
 
     _loadModule() {
-      if (this.context.loadable && Array.isArray(opts.modules)) {
+      if (this.props.report && Array.isArray(opts.modules)) {
         opts.modules.forEach(moduleName => {
-          this.context.loadable.report(moduleName);
+          this.props.report(moduleName);
         });
       }
 
@@ -243,6 +240,12 @@ function createLoadableComponent(loadFn, options) {
       )
     };
   };
+  const ContextWrapper = props => <CaptureContext.Consumer>
+    {report => <LoadableComponent {...props} report={report}/>}
+  </CaptureContext.Consumer>
+  ContextWrapper.preload = init
+  ContextWrapper.displayName = 'CaptureContextWrapper'
+	return ContextWrapper
 }
 
 function Loadable(opts) {
@@ -259,19 +262,9 @@ function LoadableMap(opts) {
 
 Loadable.Map = LoadableMap;
 
-class Capture extends React.Component {
-  getChildContext() {
-    return {
-      loadable: {
-        report: this.props.report
-      }
-    };
-  }
-
-  render() {
-    return React.Children.only(this.props.children);
-  }
-}
+const Capture = ({children, report}) => <CaptureContext.Provider value={report}>
+  {children}
+</CaptureContext.Provider>
 
 Loadable.Capture = Capture;
 
