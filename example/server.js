@@ -7,7 +7,7 @@ import {getBundles} from 'react-loadable-webpack'
 import App from './components/App'
 import fs from 'fs'
 
-const getStats = () => JSON.parse(fs.readFileSync(path.resolve(__dirname, 'dist/server/react-loadable.json'), 'utf8'));
+const getStats = () => JSON.parse(fs.readFileSync(path.resolve(__dirname, 'dist/client/react-loadable.json'), 'utf8'));
 const app = express();
 
 const mainJsPublicPath = '/dist/main.js'
@@ -26,6 +26,8 @@ const Html = ({styles, scripts, body}) => {
     </head>
     <body>
     <div id="app" dangerouslySetInnerHTML={{__html: body}}/>
+    <script src="/dist/runtime.js"/>
+    <script src="/dist/vendors~main.js"/>
     <script src={mainJsPublicPath}/>
     {
       scripts.map((script, index) => {

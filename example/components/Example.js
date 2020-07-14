@@ -1,6 +1,7 @@
 import React from 'react'
 import Loadable from 'react-loadable'
 import Loading from './Loading'
+import {splitValue} from './Split'
 
 const LoadableNested = Loadable({
   loader: () => import(/* webpackChunkName: 'example-nested' */'./ExampleNested'),
@@ -15,4 +16,8 @@ export default function Example() {
       <LoadableNested/>
     </div>
   );
+}
+
+export const getSplitValue = () => {
+	return splitValue
 }

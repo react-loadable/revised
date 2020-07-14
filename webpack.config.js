@@ -42,6 +42,27 @@ const client = {
       'react-loadable': path.resolve(__dirname, 'src'),
     },
   },
+  plugins: [
+    new ReactLoadablePlugin({
+      filename: 'react-loadable.json'
+    }),
+  ],
+  optimization: {
+    runtimeChunk: 'single',
+    splitChunks: { // force all chunk split
+      chunks: 'all',
+      maxInitialRequests: Infinity,
+      minSize: 0,
+      cacheGroups: {
+        vendors: {
+          test: /\/node_modules\//
+        },
+        split: {
+          test: /\/Split.js$/
+        }
+      }
+    }
+  }
 };
 const server = {
   entry: {
@@ -87,10 +108,5 @@ const server = {
       'react-loadable-webpack': path.resolve(__dirname, 'src/webpack'),
     },
   },
-  plugins: [
-    new ReactLoadablePlugin({
-      filename: 'react-loadable.json'
-    }),
-  ]
 };
 module.exports = [client, server]
