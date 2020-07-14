@@ -1,6 +1,6 @@
 import React from 'react';
 import renderer from 'react-test-renderer';
-import Loadable from '../src'
+import Loadable from 'react-loadable/index'
 import 'regenerator-runtime'
 
 function waitFor(delay) {
