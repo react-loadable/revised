@@ -1,14 +1,15 @@
-import React from 'react';
-import Loadable from 'react-loadable';
-import Loading from './Loading';
-import delay from '../utils/delay';
-import path from 'path';
+import React from 'react'
+import Loadable from 'react-loadable'
+import Loading from './Loading'
 
 const LoadableExample = Loadable({
-  loader: () => import('./Example'),
+  loader: () => import(/* webpackChunkName: 'example' */'./Example'),
   loading: Loading,
 });
 
 export default function App() {
-  return <LoadableExample/>;
+  return <>
+		<p><strong>Check console for more log</strong></p>
+    <LoadableExample/>
+  </>
 }

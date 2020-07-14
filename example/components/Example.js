@@ -1,14 +1,13 @@
-import React from 'react';
-import Loadable from 'react-loadable';
-import Loading from './Loading';
-import delay from '../utils/delay';
-import path from 'path';
+import React from 'react'
+import Loadable from 'react-loadable'
+import Loading from './Loading'
 
 const LoadableNested = Loadable({
-  loader: () => import('./ExampleNested'),
+  loader: () => import(/* webpackChunkName: 'example-nested' */'./ExampleNested'),
   loading: Loading,
 });
 
+globalThis.exampleLoaded = true
 export default function Example() {
   return (
     <div>

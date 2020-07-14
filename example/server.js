@@ -7,10 +7,10 @@ import {getBundles} from 'react-loadable-webpack'
 import App from './components/App'
 import fs from 'fs'
 
-const stats = JSON.parse(fs.readFileSync(path.resolve(__dirname, 'dist/react-loadable.json'), 'utf8'));
+const getStats = () => JSON.parse(fs.readFileSync(path.resolve(__dirname, 'dist/server/react-loadable.json'), 'utf8'));
 const app = express();
 
-const Html = ({styles, scripts, children}) => {
+const Html = ({styles, scripts, body}) => {
   return <html lang="en">
     <head>
       <meta charSet="UTF-8"/>
@@ -18,17 +18,17 @@ const Html = ({styles, scripts, children}) => {
       <meta httpEquiv="X-UA-Compatible" content="ie=edge"/>
       <title>My App</title>
       {
-        styles.map(style => {
-          return <link href={`/dist/${style.file}`} rel="stylesheet"/>;
+        styles.map((style, index) => {
+          return <link href={`/dist/${style.file}`} rel="stylesheet" key={index}/>;
         })
       }
     </head>
     <body>
-    <div id="app">{children}</div>
+    <div id="app" dangerouslySetInnerHTML={{__html: body}}/>
     <script src="/dist/main.js"/>
     {
-      scripts.map(script => {
-        return <script src={`/dist/${script.file}`}/>
+      scripts.map((script, index) => {
+        return <script src={`/dist/${script.file}`} key={index}/>
       })
     }
     <script>window.main();</script>
@@ -43,19 +43,16 @@ app.get('/', (req, res) => {
       <App/>
     </Loadable.Capture>
   );
-
-  let bundles = getBundles(stats, modules);
+  let bundles = getBundles(getStats(), modules);
 
   let styles = bundles.filter(bundle => bundle.file.endsWith('.css'));
   let scripts = bundles.filter(bundle => bundle.file.endsWith('.js'));
 
   res.send(`<!doctype html>
-${ReactDOMServer.renderToStaticMarkup(<Html styles={styles} scripts={scripts}>
-    {body}
-  </Html>)}`)
+${ReactDOMServer.renderToStaticMarkup(<Html styles={styles} scripts={scripts} body={body}/>)}`)
 });
 
-app.use('/dist', express.static(path.join(__dirname, 'dist')));
+app.use('/dist', express.static(path.join(__dirname, 'dist', 'client')));
 
 Loadable.preloadAll().then(() => {
   app.listen(3000, () => {
