@@ -45,15 +45,12 @@ const client = {
   plugins: [
     new ReactLoadablePlugin({
       filename: 'react-loadable.json',
-      statsFilename: 'webpack.json',
     }),
   ],
   optimization: {
     runtimeChunk: 'single',
     splitChunks: { // force all chunk split
       chunks: 'all',
-      // maxInitialRequests: Infinity,
-      // minSize: 0,
       cacheGroups: {
         vendors: {
           test: /\/node_modules\//
