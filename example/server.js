@@ -10,6 +10,7 @@ import fs from 'fs'
 const getStats = () => JSON.parse(fs.readFileSync(path.resolve(__dirname, 'dist/server/react-loadable.json'), 'utf8'));
 const app = express();
 
+const mainJsPublicPath = '/dist/main.js'
 const Html = ({styles, scripts, body}) => {
   return <html lang="en">
     <head>
@@ -25,10 +26,10 @@ const Html = ({styles, scripts, body}) => {
     </head>
     <body>
     <div id="app" dangerouslySetInnerHTML={{__html: body}}/>
-    <script src="/dist/main.js"/>
+    <script src={mainJsPublicPath}/>
     {
       scripts.map((script, index) => {
-        return <script src={`/dist/${script.file}`} key={index}/>
+        return <script src={script.publicPath} key={index}/>
       })
     }
     <script>window.main();</script>
@@ -46,7 +47,12 @@ app.get('/', (req, res) => {
   let bundles = getBundles(getStats(), modules);
 
   let styles = bundles.filter(bundle => bundle.file.endsWith('.css'));
-  let scripts = bundles.filter(bundle => bundle.file.endsWith('.js'));
+  let scripts = bundles
+    .filter(bundle => bundle.file.endsWith('.js'))
+    .filter(
+      (bundle, index, arr) => bundle.publicPath !== mainJsPublicPath
+      && !arr.slice(0, index).find(({file}) => file === bundle.file)
+    );
 
   res.send(`<!doctype html>
 ${ReactDOMServer.renderToStaticMarkup(<Html styles={styles} scripts={scripts} body={body}/>)}`)
