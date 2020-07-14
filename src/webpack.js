@@ -2,29 +2,20 @@
 const url = require('url');
 
 function buildManifest(compiler, compilation) {
-  let context = compiler.options.context;
-  let manifest = {};
-
-  compilation.chunks.forEach(chunk => {
-    chunk.files.forEach(file => {
-      chunk.forEachModule(module => {
-        let id = module.id;
-        let name = typeof module.libIdent === 'function' ? module.libIdent({ context }) : null;
-        let publicPath = url.resolve(compilation.outputOptions.publicPath || '', file);
-
-        let currentModule = module;
-        if (module.constructor.name === 'ConcatenatedModule') {
-          currentModule = module.rootModule;
-        }
-        if (!manifest[currentModule.rawRequest]) {
-          manifest[currentModule.rawRequest] = [];
-        }
-
-        manifest[currentModule.rawRequest].push({ id, name, file, publicPath });
+  var manifest = {};
+  compilation.chunkGroups.forEach(function (chunkGroup) {
+    chunkGroup.chunks.forEach(function (chunk) {
+      chunk.files.forEach(function (file) {
+        chunkGroup.origins.forEach(function (origin) {
+          var publicPath = url.resolve(compilation.outputOptions.publicPath || '', file);
+          if (!manifest[origin.request]) manifest[origin.request] = [];
+          if (!manifest[origin.request].find(function(value){
+            return value.file === file
+          })) manifest[origin.request].push({file, publicPath});
+        });
       });
     });
   });
-
   return manifest;
 }
 
