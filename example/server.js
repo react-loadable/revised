@@ -10,7 +10,6 @@ import fs from 'fs'
 const getStats = () => JSON.parse(fs.readFileSync(path.resolve(__dirname, 'dist/client/react-loadable.json'), 'utf8'));
 const app = express();
 
-const mainJsPublicPath = '/dist/main.js'
 const Html = ({styles, scripts, body}) => {
   return <html lang="en">
     <head>
@@ -26,9 +25,6 @@ const Html = ({styles, scripts, body}) => {
     </head>
     <body>
     <div id="app" dangerouslySetInnerHTML={{__html: body}}/>
-    <script src="/dist/runtime.js"/>
-    <script src="/dist/vendors~main.js"/>
-    <script src={mainJsPublicPath}/>
     {
       scripts.map((script, index) => {
         return <script src={script.publicPath} key={index}/>
@@ -46,7 +42,7 @@ app.get('/', (req, res) => {
       <App/>
     </Loadable.Capture>
   );
-  let bundles = getBundles(getStats(), modules);
+  let bundles = getBundles(getStats(), modules).filter(Boolean);
 
   let styles = bundles.filter(bundle => bundle.file.endsWith('.css'));
   let scripts = bundles
@@ -66,6 +62,4 @@ Loadable.preloadAll().then(() => {
   app.listen(3000, () => {
     console.log('Running on http://localhost:3000/');
   });
-}).catch(err => {
-  console.log(err);
-});
+}).catch(console.error);

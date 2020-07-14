@@ -23,10 +23,11 @@ function buildManifest(compiler, compilation) {
 class ReactLoadablePlugin {
   constructor(opts = {}) {
     this.filename = opts.filename;
+    this.statsFilename = opts.statsFilename
   }
 
   apply(compiler) {
-    compiler.hooks.emit.tap('react-loadable', compilation => {
+  	const emit = (compilation, callback) => {
       const manifest = buildManifest(compiler, compilation);
       var json = JSON.stringify(manifest, null, 2);
       compilation.assets[this.filename] = {
@@ -37,7 +38,24 @@ class ReactLoadablePlugin {
           return json.length
         }
       }
-    });
+      if (this.statsFilename) {
+        const stats = JSON.stringify(compilation.getStats().toJson({
+          source: false,
+          excludeModules: /\/node_modules\//
+        }), null, 2)
+        compilation.assets[this.statsFilename] = {
+          source() {
+            return stats;
+          },
+          size() {
+            return stats.length
+          }
+        }
+      }
+      if (callback) callback()
+    }
+    if (compiler.hooks) compiler.hooks.emit.tap('react-loadable', emit);
+    else coompile.plugin('emit', emit)
   }
 }
 
