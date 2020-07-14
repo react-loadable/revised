@@ -1,5 +1,5 @@
 const path = require('path');
-const { ReactLoadablePlugin } = require('./lib/webpack');
+const { ReactLoadablePlugin } = require('./webpack');
 const nodeExternals = require('webpack-node-externals')
 
 const client = {
@@ -29,7 +29,7 @@ const client = {
               'syntax-dynamic-import',
               '@babel/plugin-proposal-class-properties',
               '@babel/plugin-transform-object-assign',
-              require.resolve('./lib/babel'),
+              require.resolve('./babel'),
             ],
           }
         },
@@ -73,7 +73,7 @@ const server = {
               'syntax-dynamic-import',
               '@babel/plugin-proposal-class-properties',
               '@babel/plugin-transform-object-assign',
-              require.resolve('./lib/babel'),
+              require.resolve('./babel'),
             ],
           }
         },
