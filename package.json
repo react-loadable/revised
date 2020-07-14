@@ -15,8 +15,7 @@
     "test": "jest --coverage",
     "build": "babel src -d lib",
     "clean": "rm -rf coverage lib example/dist node_modules/.cache",
-    "start": "yarn build && webpack --mode=development && node example/dist/server/main.js",
-    "prepare": "yarn build"
+    "start": "yarn build && webpack --mode=development && node example/dist/server/main.js"
   },
   "dependencies": {},
   "devDependencies": {

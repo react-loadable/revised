@@ -1,5 +1,5 @@
 const path = require('path');
-const { ReactLoadablePlugin } = require('./webpack');
+const { ReactLoadablePlugin } = require('./lib/webpack');
 const nodeExternals = require('webpack-node-externals')
 
 const client = {

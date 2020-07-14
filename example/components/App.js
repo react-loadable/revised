@@ -9,7 +9,7 @@ const LoadableExample = Loadable({
 
 export default function App() {
   return <>
-		<p><strong>Check console for more log</strong></p>
+		<p><strong>Check the console for more log</strong></p>
     <LoadableExample/>
   </>
 }
