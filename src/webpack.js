@@ -2,7 +2,6 @@
 const url = require('url');
 
 function buildManifest(compiler, compilation) {
-  // var context = compiler.options.context;
   var manifest = {};
   compilation.chunkGroups.forEach(function (chunkGroup) {
     chunkGroup.chunks.forEach(function (chunk) {
