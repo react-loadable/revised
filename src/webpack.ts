@@ -4,26 +4,21 @@ import ChunkGroup = webpack.compilation.ChunkGroup
 
 const isOriginDynamicImported = (origin: string, chunkGroup: ChunkGroup) => {
 	// check if origin is imported via import()
-	for (const chunk of chunkGroup.chunks)
-		for (const module of chunk.getModules())
-			for (const {type, userRequest} of module.reasons)
-				if (userRequest === origin && type === 'import()') return true
-	return false
+	// for (const chunk of chunkGroup.chunks)
+	// 	for (const md of chunk.getModules())
+	// 		for (const {type, userRequest} of md.reasons)
+	// 			if (userRequest === origin && type === 'import()') return true
+	// return false
+	return true
 }
 
 export interface LoadableManifest {
-	publicPath?: string
 	originToChunkGroups: Record<string, string[]>
 	chunkGroupAssets: Record<string, string[]>
 	preloadAssets: Record<string, string[]>
 	prefetchAssets: Record<string, string[]>
 }
-const assetFilter = (includeHotUpdate?: boolean, includeSourceMap?: boolean) => (
-	file: string
-) => (includeHotUpdate || !/\.hot-update\.js$/.test(file))
-	&& (file.endsWith('.js') || file.endsWith('.css') || (includeSourceMap && file.endsWith('.map')))
 const buildManifest = (compilation: Compilation, includeHotUpdate?: boolean, includeSourceMaps?: boolean) => {
-	const filterCb = assetFilter(includeHotUpdate, includeSourceMaps)
 	const includedChunkGroups = new Set<string>()
 	// get map of origin to chunk groups
 	const originToChunkGroups: Record<string, string[]> = {}
@@ -31,8 +26,8 @@ const buildManifest = (compilation: Compilation, includeHotUpdate?: boolean, inc
 		for (const origin of chunkGroup.origins)
 			if (isOriginDynamicImported(origin, chunkGroup)) {
 				includedChunkGroups.add(chunkGroup.name)
-				if (!originToChunkGroups[origin]) originToChunkGroups[origin] = []
-				originToChunkGroups[origin].push(chunkGroup.name)
+				if (!originToChunkGroups[origin.request]) originToChunkGroups[origin.request] = []
+				originToChunkGroups[origin.request].push(chunkGroup.name)
 			}
 
 	const {namedChunkGroups} = compilation.getStats().toJson({
@@ -46,18 +41,17 @@ const buildManifest = (compilation: Compilation, includeHotUpdate?: boolean, inc
 	for (const chunkGroup of compilation.chunkGroups)
 		if (includedChunkGroups.has(chunkGroup.name)) {
 			//get map of chunk group to assets
-			chunkGroupAssets[chunkGroup.name] = chunkGroup.getAllFiles().filter(filterCb)
+			chunkGroupAssets[chunkGroup.name] = chunkGroup.getFiles()
 
 			//get chunk group size
 			let size = 0
-			for (const md of chunkGroup.getModules())
-				if (filterCb(md.userRequest)) size += md.size()
+			for (const chunk of chunkGroup.chunks) size += chunk.size()
 			chunkGroupSizes[chunkGroup.name] = size
 
 			//child assets
 			const {prefetch, preload} = namedChunkGroups![chunkGroup.name].childAssets
-			preloadAssets[chunkGroup.name] = preload?.filter(filterCb) || []
-			prefetchAssets[chunkGroup.name] = prefetch?.filter(filterCb) || []
+			preloadAssets[chunkGroup.name] = preload || []
+			prefetchAssets[chunkGroup.name] = prefetch || []
 		}
 
 	//sort for the greedy cover set algorithm
@@ -66,7 +60,6 @@ const buildManifest = (compilation: Compilation, includeHotUpdate?: boolean, inc
 			(cg1, cg2) => chunkGroupSizes[cg1] - chunkGroupSizes[cg2]
 		)
 	return {
-		publicPath: compilation.outputOptions.publicPath,
 		originToChunkGroups,
 		chunkGroupAssets,
 		preloadAssets,
@@ -99,20 +92,23 @@ export class ReactLoadablePlugin {
 
 export const getBundles = (
 	{
-		publicPath: defaultPublicPath,
 		originToChunkGroups,
 		chunkGroupAssets,
 		preloadAssets,
 		prefetchAssets,
 	}: LoadableManifest,
 	moduleIds: string[],
-	{entries, publicPath}: {
-		publicPath?: string
+	{entries, includeSourceMap, includeHotUpdate}: {
 		entries?: string[]
+		includeHotUpdate?: boolean
+		includeSourceMap?: boolean
 	} = {}
 ) => {
+	const assetFilter = (
+		file: string
+	) => (includeHotUpdate || !/\.hot-update\.js$/.test(file))
+		&& (file.endsWith('.js') || file.endsWith('.css') || (includeSourceMap && file.endsWith('.map')))
 	if (!entries) entries = ['main']
-	if (publicPath === undefined) publicPath = defaultPublicPath || ''
 
 	const chunkGroups = new Set<string>()
 	const assets = new Set<string>()
@@ -126,9 +122,9 @@ export const getBundles = (
 			console.warn(`Can not find chunk group ${chunkGroup}`)
 			return
 		}
-		for (const asset of chunkGroupAssets[chunkGroup]) assets.add(asset)
-		for (const asset of preloadAssets[chunkGroup]) preload.add(asset)
-		for (const asset of prefetchAssets[chunkGroup]) prefetch.add(asset)
+		for (const asset of chunkGroupAssets[chunkGroup].filter(assetFilter)) assets.add(asset)
+		for (const asset of preloadAssets[chunkGroup].filter(assetFilter)) preload.add(asset)
+		for (const asset of prefetchAssets[chunkGroup].filter(assetFilter)) prefetch.add(asset)
 	}
 
 	for (const entry of entries) addChunkGroup(entry)
@@ -144,4 +140,3 @@ export const getBundles = (
 	}
 	return {assets, preload, prefetch}
 }
-
