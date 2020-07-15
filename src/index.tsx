@@ -76,7 +76,7 @@ const loadMap = <T,>(obj: Record<string, LoaderType<T>>) => {
 				state.error = result.error
 			} else state.loading = true
 			promises.push(result.promise)
-			(async () => {
+			;(async () => {
 				try {
 					state.loaded[key] = await result.promise
 				} catch (e){
