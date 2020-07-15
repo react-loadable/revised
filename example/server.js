@@ -3,7 +3,7 @@ import path from 'path'
 import React from 'react'
 import ReactDOMServer from 'react-dom/server'
 import Loadable from 'react-loadable'
-import {getBundles} from 'webpack.ts'
+import {getBundles} from 'react-loadable/webpack'
 import App from './components/App'
 import fs from 'fs'
 
