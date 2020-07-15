@@ -181,7 +181,7 @@ const createLoadableComponent = <T, V extends boolean>(
 					setStateWithMountCheck({ timedOut: true })
 				}, opts.timeout)
 			}
-			try { await res.promise } finally {
+			try { await res.promise } catch {} finally {
 				setStateWithMountCheck({
 					error: res.error,
 					loaded: res.loaded,
