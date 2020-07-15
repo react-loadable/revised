@@ -5,12 +5,12 @@ const READY_INITIALIZERS: Array<() => any> = []
 const CaptureContext = createContext<((moduleId: string) => any) | undefined>(undefined)
 
 declare const __webpack_modules__: any
-export type LoadComponent<T> = {
-	default: ComponentType<T>
+export type LoadComponent<ComponentProps> = {
+	default: ComponentType<ComponentProps>
 	__esModule: true
-} | (ComponentType<T> & {__esModule: undefined})
-export type LoaderType<T> = () => Promise<LoadComponent<T>>
-export type LoadableOptions<T, V extends boolean> = {
+} | (ComponentType<ComponentProps> & {__esModule: undefined})
+export type LoaderType<ComponentProps> = () => Promise<LoadComponent<ComponentProps>>
+export type LoadableOptions<InputProps, IsSingle extends boolean, ComponentProps> = {
 	loading: ComponentType<{
 		isLoading: boolean
 		pastDelay: boolean
@@ -20,8 +20,10 @@ export type LoadableOptions<T, V extends boolean> = {
 	}>
 	delay?: number
 	timeout?: number
-	render?: typeof render
-	loader: V extends true ? LoaderType<T> : Record<string, LoaderType<T>>
+	render?: IsSingle extends true
+		? ((loaded: LoadComponent<ComponentProps>, props: InputProps) => ReactNode)
+		: ((loaded: Record<string, LoadComponent<ComponentProps>>, props: InputProps) => ReactNode)
+	loader: IsSingle extends true ? LoaderType<ComponentProps> : Record<string, LoaderType<ComponentProps>>
 }
 
 const isWebpackReady = (getModuleIds: () => string[]) => typeof __webpack_modules__ === 'object'
@@ -30,15 +32,15 @@ const isWebpackReady = (getModuleIds: () => string[]) => typeof __webpack_module
 			&& typeof __webpack_modules__[moduleId] !== 'undefined'
 	)
 
-const load = <T,>(loader: LoaderType<T>) => {
+const load = <ComponentProps,>(loader: LoaderType<ComponentProps>) => {
 	const state = {
 		loading: true,
 		loaded: null,
 		error: null,
 	} as {
-		promise: Promise<LoadComponent<T>>
+		promise: Promise<LoadComponent<ComponentProps>>
 		loading: boolean
-		loaded: LoadComponent<T> | null
+		loaded: LoadComponent<ComponentProps> | null
 		error: Error | null
 	}
 	state.promise = new Promise(async (resolve, reject) => {
@@ -56,18 +58,18 @@ const load = <T,>(loader: LoaderType<T>) => {
 	return state
 }
 
-const loadMap = <T,>(obj: Record<string, LoaderType<T>>) => {
+const loadMap = <ComponentProps,>(obj: Record<string, LoaderType<ComponentProps>>) => {
 	const state = {
 		loading: false,
 		loaded: {},
 		error: null
 	} as {
 		loading: boolean
-		loaded: Record<string, LoadComponent<T> | null>
+		loaded: Record<string, LoadComponent<ComponentProps> | null>
 		error: Error | null
-		promise: Promise<Array<LoadComponent<T>>>
+		promise: Promise<Array<LoadComponent<ComponentProps>>>
 	}
-	const promises: Array<Promise<LoadComponent<T>>> = []
+	const promises: Array<Promise<LoadComponent<ComponentProps>>> = []
 	try {
 		for (const key of Object.keys(obj)) {
 			let result = load(obj[key])
@@ -100,37 +102,38 @@ const loadMap = <T,>(obj: Record<string, LoaderType<T>>) => {
 	return state
 }
 
-const resolve = <T,>(obj: LoadComponent<T>) => obj?.__esModule ? obj.default : obj
-const render = <T, >(
-	loaded: LoadComponent<T>,
-	props: T
+const resolve = <ComponentProps,>(obj: LoadComponent<ComponentProps>) => obj?.__esModule ? obj.default : obj
+const render = <ComponentProps, >(
+	loaded: LoadComponent<ComponentProps>,
+	props: ComponentProps
 ) => React.createElement(resolve(loaded), props)
 
-type StateType<T, V> = {
+type LoadedType<ComponentProps, IsSingle> = IsSingle extends true ? (LoadComponent<ComponentProps> | null) : Record<string, ComponentProps>
+type StateType<ComponentProps, IsSingle> = {
 	error: Error | null
 	pastDelay: boolean
 	timedOut: boolean
 	loading: boolean
-	loaded: unknown
+	loaded: LoadedType<ComponentProps, IsSingle>
 }
-const createLoadableComponent = <T, V extends boolean>(
-	loadFn: V extends true ? typeof load : typeof loadMap,
-	options: LoadableOptions<T, V>
+const createLoadableComponent = <InputProps, IsSingle extends boolean, ComponentProps>(
+	loadFn: IsSingle extends true ? typeof load : typeof loadMap,
+	options: LoadableOptions<InputProps, IsSingle, ComponentProps>
 ) => {
 	if (!options.loading) throw new Error('react-loadable requires a `loading` component')
 	const opts = {
 		delay: 200,
 		timeout: null,
 		render,
-		...(options as unknown as LoadableOptions<T, V> & {
+		...(options as unknown as LoadableOptions<ComponentProps, IsSingle, InputProps> & {
 			webpack: () => string[]
 			modules: string[]
 		})
 	}
-	let res!: V extends true ? ReturnType<typeof load> : ReturnType<typeof loadFn>
+	let res!: IsSingle extends true ? ReturnType<typeof load> : ReturnType<typeof loadFn>
 
 	const init = () => {
-		if (!res) res = (loadFn as typeof load)(opts.loader as LoaderType<T>) as V extends true ? ReturnType<typeof load> : ReturnType<typeof loadFn>
+		if (!res) res = (loadFn as typeof load)(opts.loader as unknown as LoaderType<ComponentProps>) as IsSingle extends true ? ReturnType<typeof load> : ReturnType<typeof loadFn>
 		return res.promise
 	}
 	ALL_INITIALIZERS.push(init)
@@ -140,12 +143,12 @@ const createLoadableComponent = <T, V extends boolean>(
 			if (isWebpackReady(opts.webpack)) return init()
 		})
 
-	class LoadableComponent extends React.Component<T & {report: ((moduleId: string) => any) | undefined}> {
+	class LoadableComponent extends React.Component<ComponentProps & {report: ((moduleId: string) => any) | undefined}> {
 		private _mounted?: boolean
-		state: StateType<T, V>
+		state: StateType<ComponentProps, IsSingle>
 		private _delay!: ReturnType<typeof setTimeout>
 		private _timeout!: ReturnType<typeof setTimeout>
-		constructor(props: T & {report: ((moduleId: string) => any) | undefined}) {
+		constructor(props: ComponentProps & {report: ((moduleId: string) => any) | undefined}) {
 			super(props)
 			init()
 			this.state = {
@@ -153,7 +156,7 @@ const createLoadableComponent = <T, V extends boolean>(
 				pastDelay: false,
 				timedOut: false,
 				loading: res!.loading,
-				loaded: res!.loaded
+				loaded: res!.loaded as any
 			}
 			this._loadModule()
 		}
@@ -162,7 +165,7 @@ const createLoadableComponent = <T, V extends boolean>(
 			if (this.props.report && Array.isArray(opts.modules))
 			for (const moduleName of opts.modules) this.props.report!(moduleName)
 			if (!res.loading) return
-			const setStateWithMountCheck = (newState: Partial<StateType<T, V>>) => {
+			const setStateWithMountCheck = (newState: Partial<StateType<ComponentProps, IsSingle>>) => {
 				if (!this._mounted) return
 				this.setState(newState)
 			}
@@ -184,7 +187,7 @@ const createLoadableComponent = <T, V extends boolean>(
 			try { await res.promise } catch {} finally {
 				setStateWithMountCheck({
 					error: res.error,
-					loaded: res.loaded,
+					loaded: res.loaded as any,
 					loading: res.loading
 				})
 				this._clearTimeouts()
@@ -200,7 +203,7 @@ const createLoadableComponent = <T, V extends boolean>(
 		}
 		retry() {
 			this.setState({ error: null, loading: true, timedOut: false })
-			res = (loadFn as typeof load)(opts.loader as LoaderType<T>) as V extends true ? ReturnType<typeof load> : ReturnType<typeof loadFn>
+			res = (loadFn as any)(opts.loader)
 			this._loadModule()
 		}
 		public render() {
@@ -215,13 +218,13 @@ const createLoadableComponent = <T, V extends boolean>(
 							retry={this.retry}
 						/>
 						: this.state.loaded
-						? opts.render(this.state.loaded, this.props)
+						? opts.render(this.state.loaded as any, this.props)
 						: null
 				}
 			</StrictMode>
 		}
 	}
-	const ContextWrapper = (props: T) => <CaptureContext.Consumer>
+	const ContextWrapper = (props: ComponentProps) => <CaptureContext.Consumer>
 		{report => <LoadableComponent {...props} report={report}/>}
 	</CaptureContext.Consumer>
 	ContextWrapper.preload = init
@@ -229,8 +232,8 @@ const createLoadableComponent = <T, V extends boolean>(
 	return ContextWrapper
 }
 
-const Loadable = <T,>(opts: LoadableOptions<T, true>) => createLoadableComponent(load, opts)
-Loadable.Map = <T, >(opts: LoadableOptions<T, false>) => {
+const Loadable = <InputProps, ComponentProps>(opts: LoadableOptions<InputProps, true, ComponentProps>) => createLoadableComponent(load, opts)
+Loadable.Map = <InputProps, ComponentProps>(opts: LoadableOptions<InputProps, false, ComponentProps>) => {
 	if (typeof opts.render !== 'function')
 		throw new Error('LoadableMap requires a `render(loaded, props)` function')
 	return createLoadableComponent(loadMap, opts)
