@@ -5,7 +5,7 @@ import Loading from './Loading'
 const LoadableExample = Loadable({
 	loader: () => import(/* webpackChunkName: 'example' */'./Example'),
 	loading: Loading,
-});
+})
 
 export default function App() {
 	return <>

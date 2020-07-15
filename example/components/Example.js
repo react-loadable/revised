@@ -7,7 +7,7 @@ const LoadableNested = Loadable({
 		webpackChunkName: 'example-nested'
 	*/'./ExampleNested'),
 	loading: Loading,
-});
+})
 
 globalThis.exampleLoaded = true
 export default function Example() {
@@ -16,5 +16,5 @@ export default function Example() {
 			<h1>Hello from a loadable component</h1>
 			<LoadableNested/>
 		</div>
-	);
+	)
 }

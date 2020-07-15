@@ -7,8 +7,8 @@ import {getBundles} from 'react-loadable/webpack'
 import App from './components/App'
 import fs from 'fs'
 
-const getStats = () => JSON.parse(fs.readFileSync(path.resolve(__dirname, 'dist/client/react-loadable.json'), 'utf8'));
-const app = express();
+const getStats = () => JSON.parse(fs.readFileSync(path.resolve(__dirname, 'dist/client/react-loadable.json'), 'utf8'))
+const app = express()
 
 const Html = ({styles, scripts, body}) => {
 	return <html lang="en">
@@ -19,7 +19,7 @@ const Html = ({styles, scripts, body}) => {
 			<title>My App</title>
 			{
 				styles.map((style, index) => {
-					return <link href={`/dist/${style.file}`} rel="stylesheet" key={index}/>;
+					return <link href={`/dist/${style.file}`} rel="stylesheet" key={index}/>
 				})
 			}
 		</head>
@@ -30,36 +30,36 @@ const Html = ({styles, scripts, body}) => {
 				return <script src={script.publicPath} key={index}/>
 			})
 		}
-		<script>window.main();</script>
+		<script>window.main()</script>
 		</body>
 	</html>
 }
 
 app.get('/', (req, res) => {
-	let modules = [];
+	let modules = []
 	let body = ReactDOMServer.renderToString(
 		<Loadable.Capture report={moduleName => modules.push(moduleName)}>
 			<App/>
 		</Loadable.Capture>
-	);
-	let bundles = getBundles(getStats(), modules).filter(Boolean);
+	)
+	let bundles = getBundles(getStats(), modules).filter(Boolean)
 
-	let styles = bundles.filter(bundle => bundle.file.endsWith('.css'));
+	let styles = bundles.filter(bundle => bundle.file.endsWith('.css'))
 	let scripts = bundles
 		.filter(bundle => bundle.file.endsWith('.js'))
 		.filter(
 			(bundle, index, arr) => bundle.publicPath !== mainJsPublicPath
 			&& !arr.slice(0, index).find(({file}) => file === bundle.file)
-		);
+		)
 
 	res.send(`<!doctype html>
 ${ReactDOMServer.renderToStaticMarkup(<Html styles={styles} scripts={scripts} body={body}/>)}`)
-});
+})
 
-app.use('/dist', express.static(path.join(__dirname, 'dist', 'client')));
+app.use('/dist', express.static(path.join(__dirname, 'dist', 'client')))
 
 Loadable.preloadAll().then(() => {
 	app.listen(3000, () => {
-		console.log('Running on http://localhost:3000/');
-	});
-}).catch(console.error);
+		console.log('Running on http://localhost:3000/')
+	})
+}).catch(console.error)

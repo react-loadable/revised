@@ -8,7 +8,7 @@ const LoadableDescendant = Loadable({
 		webpackPrefetch: true
 	*/'./Descendant'),
 	loading: Loading,
-});
+})
 globalThis.nestedExampleLoaded = true
 export default function ExampleNested() {
 	return <>

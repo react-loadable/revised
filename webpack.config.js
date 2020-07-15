@@ -1,5 +1,5 @@
-const path = require('path');
-const { ReactLoadablePlugin } = require('./webpack');
+const path = require('path')
+const { ReactLoadablePlugin } = require('./webpack')
 const nodeExternals = require('webpack-node-externals')
 
 const client = {
@@ -58,7 +58,7 @@ const client = {
 			}
 		}
 	}
-};
+}
 const server = {
 	entry: {
 		main: './example/server',
@@ -103,5 +103,5 @@ const server = {
 			'react-loadable/webpack': path.resolve(__dirname, 'webpack'),
 		},
 	},
-};
+}
 module.exports = [client, server]
