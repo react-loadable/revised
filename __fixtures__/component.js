@@ -1,5 +1,3 @@
-const React = require("react");
+const React = require('react')
 
-module.exports = function Component() {
-  return <div>fixture1</div>;
-};
+module.exports = () => <div>fixture1</div>
