@@ -1,10 +1,10 @@
-const path = require('path')
-const { ReactLoadablePlugin } = require('./webpack')
-const nodeExternals = require('webpack-node-externals')
+import path from 'path'
+import {ReactLoadablePlugin} from './webpack'
+import nodeExternals from 'webpack-node-externals'
 
 const client = {
 	entry: {
-		main: './example/client',
+		main: './example/client.tsx',
 	},
 	output: {
 		path: path.join(__dirname, 'example', 'dist', 'client'),
@@ -15,7 +15,7 @@ const client = {
 	module: {
 		rules: [
 			{
-				test: /\.js$/,
+				test: /\.(ts|js|tsx|jsx)$/,
 				exclude: /node_modules/,
 				use: {
 					loader: 'babel-loader',
@@ -24,6 +24,7 @@ const client = {
 						presets: [
 							['@babel/preset-env', { modules: false }],
 							'@babel/preset-react',
+							'@babel/preset-typescript',
 						],
 						plugins: [
 							'syntax-dynamic-import',
@@ -38,6 +39,7 @@ const client = {
 	},
 	devtool: 'source-map',
 	resolve: {
+		extensions: ['.js', '.jsx', '.ts', '.tsx'],
 		alias: {
 			'react-loadable': path.resolve(__dirname, 'lib'),
 		},
@@ -61,7 +63,7 @@ const client = {
 }
 const server = {
 	entry: {
-		main: './example/server',
+		main: './example/server.tsx',
 	},
 	target: 'node',
 	externals: [nodeExternals()],
@@ -75,7 +77,7 @@ const server = {
 	module: {
 		rules: [
 			{
-				test: /\.js$/,
+				test: /\.(js|ts|tsx|jsx)$/,
 				exclude: /node_modules/,
 				use: {
 					loader: 'babel-loader',
@@ -84,6 +86,7 @@ const server = {
 						presets: [
 							['@babel/preset-env', { modules: false }],
 							'@babel/preset-react',
+							'@babel/preset-typescript',
 						],
 						plugins: [
 							'syntax-dynamic-import',
@@ -98,10 +101,11 @@ const server = {
 	},
 	devtool: 'inline-source-map',
 	resolve: {
+		extensions: ['.js', '.jsx', '.ts', '.tsx'],
 		alias: {
 			'react-loadable': path.resolve(__dirname, 'lib'),
 			'react-loadable/webpack': path.resolve(__dirname, 'webpack'),
 		},
 	},
 }
-module.exports = [client, server]
+export default [client, server]

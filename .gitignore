@@ -4,3 +4,7 @@ node_modules
 lib
 coverage
 example/dist
+/babel.js
+/babel.d.ts
+/webpack.js
+/webpack.d.ts
