@@ -3,7 +3,7 @@ export default ({ types: t, template }) => ({
 	visitor: {
 		ImportDeclaration(path) {
 			const source = path.node.source.value
-			if (source !== '~react-loadable/revised') return
+			if (source !== '~react-loadable/revised' && source !== '@react-loadable/revised') return
 
 			const defaultSpecifier = path.get('specifiers').find(specifier => {
 				return specifier.isImportDefaultSpecifier()
