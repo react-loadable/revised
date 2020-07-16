@@ -1,11 +1,11 @@
 {
-	"name": "@tranvansang/react-loadable",
+	"name": "@react-loadable/revised",
 	"version": "0.0.1",
 	"description": "A higher order component for loading components with promises",
 	"main": "lib/index.js",
 	"author": "Tran Sang <tr@nsang.me>",
 	"license": "MIT",
-	"repository": "tranvansang/react-loadable",
+	"repository": "react-loadable/revised",
 	"files": [
 		"babel.js",
 		"webpack.js",
