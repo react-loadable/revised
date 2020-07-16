@@ -11,13 +11,13 @@ const getStats = () => JSON.parse(fs.readFileSync(path.resolve(__dirname, 'dist/
 const app = express()
 
 const Links = ({assets, prefetch}) => {
-	const urls = assets.filter(file => file.endsWith('.css')).map(file => `/dist/${file}`)
+	const urls = assets.filter(file => file.endsWith('.css'))
 	return prefetch
 		? urls.map((url, index) => <link rel={prefetch} as="style" href={url} key={index}/>)
 		: urls.map((url, index) => <link rel="stylesheet" href={url} key={index}/>)
 }
 const Scripts = ({assets, prefetch}) => {
-	const urls = assets.filter(file => file.endsWith('.js')).map(file => `/dist/${file}`)
+	const urls = assets.filter(file => file.endsWith('.js')	)
 	return prefetch
 		? urls.map((url, index) => <link rel={prefetch} as="script" href={url} key={index}/>)
 		: urls.map((url, index) => <script src={url} key={index}/>)
