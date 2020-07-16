@@ -9,24 +9,28 @@ const isOriginDynamicImported = (origin: {request: string}, chunkGroup: any) => 
 	// 		for (const {type, userRequest} of md.reasons)
 	// 			if (userRequest === origin.request && type === 'import()') return true
 	// return false
-	return !!chunkGroup.name && !!origin.request
+	return !!origin.request
 }
 
 export interface LoadableManifest {
 	publicPath?: string
 	originToChunkGroups: Record<string, string[]>
 	chunkGroupAssets: Record<string, string[]>
-	preloadAssets: Record<string, string[]>
-	prefetchAssets: Record<string, string[]>
+	preloadAssets: Record<string, string[] | undefined>
+	prefetchAssets: Record<string, string[] | undefined>
 	runtimeAssets: Record<string, string[] | undefined>
+	entryToId: Record<string, string>
 }
 const buildManifest = (compilation: Compilation, includeHotUpdate?: boolean, includeSourceMaps?: boolean) => {
+	const entryToId: Record<string, string> = {}
 	const runtimeAssets: Record<string, string[]> = {}
 	const includedChunkGroups = new Set<string>()
+	//always add entries
 	for (const chunkGroup of compilation.chunkGroups)
 		if (chunkGroup.isInitial()) {
-			includedChunkGroups.add(chunkGroup.name)
-			runtimeAssets[chunkGroup.name] = chunkGroup.getRuntimeChunk()?.files
+			entryToId[chunkGroup.name] = chunkGroup.id
+			includedChunkGroups.add(chunkGroup.id)
+			runtimeAssets[chunkGroup.id] = chunkGroup.getRuntimeChunk()?.files
 		}
 
 	// get map of origin to chunk groups
@@ -34,10 +38,10 @@ const buildManifest = (compilation: Compilation, includeHotUpdate?: boolean, inc
 	for (const chunkGroup of compilation.chunkGroups)
 		for (const origin of chunkGroup.origins)
 			if (isOriginDynamicImported(origin, chunkGroup)) {
-				includedChunkGroups.add(chunkGroup.name)
+				includedChunkGroups.add(chunkGroup.id)
 				if (!originToChunkGroups[origin.request]) originToChunkGroups[origin.request] = []
-				if (!originToChunkGroups[origin.request].includes(chunkGroup.name))
-					originToChunkGroups[origin.request].push(chunkGroup.name)
+				if (!originToChunkGroups[origin.request].includes(chunkGroup.id))
+					originToChunkGroups[origin.request].push(chunkGroup.id)
 			}
 
 	const {namedChunkGroups} = compilation.getStats().toJson({
@@ -49,19 +53,20 @@ const buildManifest = (compilation: Compilation, includeHotUpdate?: boolean, inc
 	const prefetchAssets: Record<string, string[]> = {}
 	const chunkGroupSizes: Record<string, number> = {}
 	for (const chunkGroup of compilation.chunkGroups)
-		if (includedChunkGroups.has(chunkGroup.name)) {
+		if (includedChunkGroups.has(chunkGroup.id)) {
 			//get map of chunk group to assets
-			chunkGroupAssets[chunkGroup.name] = chunkGroup.getFiles()
+			chunkGroupAssets[chunkGroup.id] = chunkGroup.getFiles()
 
 			//get chunk group size
 			let size = 0
 			for (const chunk of chunkGroup.chunks) size += chunk.size()
-			chunkGroupSizes[chunkGroup.name] = size
+			chunkGroupSizes[chunkGroup.id] = size
 
 			//child assets
-			const {prefetch, preload} = namedChunkGroups![chunkGroup.name].childAssets
-			preloadAssets[chunkGroup.name] = preload || []
-			prefetchAssets[chunkGroup.name] = prefetch || []
+			const {prefetch, preload} = namedChunkGroups![chunkGroup.name]?.childAssets || {}
+			//TODO: helpme, is there a way to get childAssets of an unnamed chunkGroup?
+			preloadAssets[chunkGroup.id] = preload
+			prefetchAssets[chunkGroup.id] = prefetch
 		}
 
 	//sort for the greedy cover set algorithm
@@ -76,6 +81,7 @@ const buildManifest = (compilation: Compilation, includeHotUpdate?: boolean, inc
 		preloadAssets,
 		prefetchAssets,
 		runtimeAssets,
+		entryToId,
 	}
 }
 
@@ -110,6 +116,7 @@ export const getBundles = (
 		preloadAssets,
 		prefetchAssets,
 		runtimeAssets,
+		entryToId,
 	}: LoadableManifest,
 	moduleIds: string[],
 	{entries, includeSourceMap, includeHotUpdate, publicPath}: {
@@ -125,6 +132,9 @@ export const getBundles = (
 	) => (includeHotUpdate || !/\.hot-update\.js$/.test(file))
 		&& (file.endsWith('.js') || file.endsWith('.css') || (includeSourceMap && file.endsWith('.map')))
 	if (!entries) entries = ['main']
+	for (const entry of entries)
+		if (!entryToId[entry]) console.warn(`Cannot find chunk group id for entry ${entry}`)
+	entries = entries.map(entry => entryToId[entry])
 
 	const chunkGroups = new Set<string>()
 	const assets = new Set<string>()
@@ -135,12 +145,12 @@ export const getBundles = (
 		if (chunkGroups.has(chunkGroup)) return
 		chunkGroups.add(chunkGroup)
 		if (!chunkGroupAssets[chunkGroup]) {
-			console.warn(`Can not find chunk group ${chunkGroup}`)
+			console.warn(`Cannot find chunk group ${chunkGroup}`)
 			return
 		}
-		for (const asset of chunkGroupAssets[chunkGroup].filter(assetFilter)) assets.add(asset)
-		for (const asset of preloadAssets[chunkGroup].filter(assetFilter)) preload.add(asset)
-		for (const asset of prefetchAssets[chunkGroup].filter(assetFilter)) prefetch.add(asset)
+		for (const asset of (chunkGroupAssets[chunkGroup] || []).filter(assetFilter)) assets.add(asset)
+		for (const asset of (preloadAssets[chunkGroup] || []).filter(assetFilter)) preload.add(asset)
+		for (const asset of (prefetchAssets[chunkGroup] || []).filter(assetFilter)) prefetch.add(asset)
 	}
 
 	for (const entry of entries) addChunkGroup(entry)

@@ -3,9 +3,7 @@ import loadable from '~react-loadable/revised'
 import Loading from './Loading'
 
 const LoadableNested = loadable({
-	loader: () => import(/*
-		webpackChunkName: 'example-nested'
-	*/'./ExampleNested'),
+	loader: () => import('./ExampleNested'),
 	loading: Loading,
 })
 

@@ -5,24 +5,19 @@ export default ({ types: t, template }) => ({
 			const source = path.node.source.value
 			if (source !== '~react-loadable/revised' && source !== '@react-loadable/revised') return
 
-			const defaultSpecifier = path.get('specifiers').find(specifier => {
-				return specifier.isImportDefaultSpecifier()
-			})
-
+			const defaultSpecifier = path.get('specifiers').find(specifier => specifier.isImportDefaultSpecifier())
 			if (!defaultSpecifier) return
 
 			const bindingName = defaultSpecifier.node.local.name
 			const binding = path.scope.getBinding(bindingName)
 
-			binding.referencePaths.forEach(refPath => {
+			for (const refPath of binding.referencePaths) {
 				let callExpression = refPath.parentPath
-
 				if (
 					callExpression.isMemberExpression() &&
 					callExpression.node.computed === false &&
-					callExpression.get('property').isIdentifier({ name: 'Map' })
+					callExpression.get('property').isIdentifier({ name: 'LoadableMap' })
 				) callExpression = callExpression.parentPath
-
 				if (!callExpression.isCallExpression()) return
 
 				const args = callExpression.get('arguments')
@@ -34,24 +29,21 @@ export default ({ types: t, template }) => ({
 				const properties = options.get('properties')
 				const propertiesMap = {}
 
-				properties.forEach(property => {
+				for (const property of properties) {
 					if (property.type !== 'SpreadProperty') {
 						const key = property.get('key')
 						propertiesMap[key.node.name] = property
 					}
-				})
-
+				}
 				if (propertiesMap.webpack) return
 
 				const loaderMethod = propertiesMap.loader.get('value')
 				const dynamicImports = []
-
 				loaderMethod.traverse({
 					Import(path) {
 						dynamicImports.push(path.parentPath)
 					}
 				})
-
 				if (!dynamicImports.length) return
 
 				propertiesMap.loader.insertAfter(
@@ -84,7 +76,7 @@ export default ({ types: t, template }) => ({
 						)
 					)
 				)
-			})
+			}
 		}
 	}
 })
