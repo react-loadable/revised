@@ -21,6 +21,10 @@ export interface LoadableManifest {
 }
 const buildManifest = (compilation: Compilation, includeHotUpdate?: boolean, includeSourceMaps?: boolean) => {
 	const includedChunkGroups = new Set<string>()
+	for (const chunkGroup of compilation.chunkGroups)
+		if (chunkGroup.isInitial())
+			includedChunkGroups.add(chunkGroup)
+
 	// get map of origin to chunk groups
 	const originToChunkGroups: Record<string, string[]> = {}
 	for (const chunkGroup of compilation.chunkGroups)
