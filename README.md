@@ -18,6 +18,7 @@ There are several changes in this package compared to the origin.
 - Simpler stats file format.
 - Rewritten in Typescript.
 - Converted to ES6 module.
+- Sort assets in output.
 
 # API changes
 
@@ -57,3 +58,8 @@ import loadable, {LoadableMap, preloadAll, preloadReady} from '@react-loadable/r
 ```
 
 3. `Map` is renamed to `LoadableMap` to avoid conflicting with the ES6 Map.
+
+4. (Advanced) The output assets are returned in the following orders.
+- Highest order (first elements): runtime assets which belong to at least one of the input entries (specified via the `options` parameter).
+- Lower order (last elements): assets which belong to at least one of the input entries, but are not runtime assets.
+- All other assets are returned between these above-mentioned assets.

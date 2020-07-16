@@ -18,12 +18,16 @@ export interface LoadableManifest {
 	chunkGroupAssets: Record<string, string[]>
 	preloadAssets: Record<string, string[]>
 	prefetchAssets: Record<string, string[]>
+	runtimeAssets: Record<string, string[] | undefined>
 }
 const buildManifest = (compilation: Compilation, includeHotUpdate?: boolean, includeSourceMaps?: boolean) => {
+	const runtimeAssets: Record<string, string[]> = {}
 	const includedChunkGroups = new Set<string>()
 	for (const chunkGroup of compilation.chunkGroups)
-		if (chunkGroup.isInitial())
+		if (chunkGroup.isInitial()) {
 			includedChunkGroups.add(chunkGroup.name)
+			runtimeAssets[chunkGroup.name] = chunkGroup.getRuntimeChunk()?.files
+		}
 
 	// get map of origin to chunk groups
 	const originToChunkGroups: Record<string, string[]> = {}
@@ -71,6 +75,7 @@ const buildManifest = (compilation: Compilation, includeHotUpdate?: boolean, inc
 		chunkGroupAssets,
 		preloadAssets,
 		prefetchAssets,
+		runtimeAssets,
 	}
 }
 
@@ -104,6 +109,7 @@ export const getBundles = (
 		chunkGroupAssets,
 		preloadAssets,
 		prefetchAssets,
+		runtimeAssets,
 	}: LoadableManifest,
 	moduleIds: string[],
 	{entries, includeSourceMap, includeHotUpdate, publicPath}: {
@@ -114,7 +120,6 @@ export const getBundles = (
 	} = {}
 ) => {
 	if (typeof publicPath !== 'string') publicPath = defaultPublicPath || ''
-	const prefixPublicPath = (file: string) => `${publicPath}${file}`
 	const assetFilter = (
 		file: string
 	) => (includeHotUpdate || !/\.hot-update\.js$/.test(file))
@@ -133,9 +138,9 @@ export const getBundles = (
 			console.warn(`Can not find chunk group ${chunkGroup}`)
 			return
 		}
-		for (const asset of chunkGroupAssets[chunkGroup].filter(assetFilter).map(prefixPublicPath)) assets.add(asset)
-		for (const asset of preloadAssets[chunkGroup].filter(assetFilter).map(prefixPublicPath)) preload.add(asset)
-		for (const asset of prefetchAssets[chunkGroup].filter(assetFilter).map(prefixPublicPath)) prefetch.add(asset)
+		for (const asset of chunkGroupAssets[chunkGroup].filter(assetFilter)) assets.add(asset)
+		for (const asset of preloadAssets[chunkGroup].filter(assetFilter)) preload.add(asset)
+		for (const asset of prefetchAssets[chunkGroup].filter(assetFilter)) prefetch.add(asset)
 	}
 
 	for (const entry of entries) addChunkGroup(entry)
@@ -149,9 +154,19 @@ export const getBundles = (
 			continue
 		addChunkGroup(includingChunkGroups[0])
 	}
+	const getOrder = (asset: string) => {
+		for (const entry of entries)
+			if (runtimeAssets[entry]?.includes(asset)) return -1
+		for (const entry of entries)
+			if (chunkGroupAssets[entry]?.includes(asset)) return 1
+		return 0
+	}
+	const assetToArray = (assets: Set<string>) => [...assets.values()].sort(
+		(as1, as2) => getOrder(as1) - getOrder(as2)
+	).map(file => `${publicPath}${file}`)
 	return {
-		assets: [...assets.values()],
-		preload: [...preload.values()],
-		prefetch: [...prefetch.values()]
+		assets: assetToArray(assets),
+		preload: assetToArray(preload),
+		prefetch: assetToArray(prefetch),
 	}
 }

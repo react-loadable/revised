@@ -37,7 +37,6 @@ const Html = ({assets, body, preload, prefetch}) => {
 		<body>
 		<div id="app" dangerouslySetInnerHTML={{__html: body}}/>
 		<Scripts assets={assets}/>
-		<script>window.main()</script>
 		<Scripts assets={preload} prefetch="preload"/>
 		<Scripts assets={prefetch} prefetch="prefetch"/>
 		</body>
