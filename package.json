@@ -1,6 +1,6 @@
 {
 	"name": "@react-loadable/revised",
-	"version": "0.0.6",
+	"version": "0.0.7",
 	"description": "A higher order component for loading components with promises",
 	"main": "lib/index.js",
 	"author": "Tran Sang <tr@nsang.me>",
