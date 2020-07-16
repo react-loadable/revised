@@ -183,7 +183,7 @@ const createLoadableComponent = <InputProps, IsSingle extends boolean, Component
 							error={this.state.error}
 							retry={this._retry}
 						/>
-						: this.state.loaded
+						: this.state.loaded || null
 						? opts.render(this.state.loaded as any, this.props.props)
 						: null
 				}
