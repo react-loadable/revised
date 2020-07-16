@@ -102,7 +102,7 @@ const loadMap = <ComponentProps,>(obj: Record<string, LoaderType<ComponentProps>
 	return state
 }
 
-const resolve = <ComponentProps,>(obj: LoadComponent<ComponentProps>) => obj?.__esModule ? obj.default : obj
+const resolve = <ComponentProps,>(obj: LoadComponent<ComponentProps>) => obj?.__esModule ? (obj as any).default : obj
 const render = <ComponentProps, >(
 	loaded: LoadComponent<ComponentProps>,
 	props: ComponentProps

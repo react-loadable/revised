@@ -15,7 +15,7 @@
 	],
 	"scripts": {
 		"test": "jest --coverage",
-		"build": "tsc && tsc --declaration webpack.ts && tsc --declaration babel.ts",
+		"build": "tsc --jsx react --declaration --esModuleInterop --outDir ./lib/ src/* && tsc --declaration webpack.ts && tsc --declaration babel.ts",
 		"clean": "rm -rf coverage lib example/dist node_modules/.cache",
 		"start": "yarn build && webpack --mode=development && node example/dist/server/main.js"
 	},
@@ -32,6 +32,7 @@
 		"@babel/preset-typescript": "^7.10.4",
 		"@types/node": "^14.0.23",
 		"@types/react": "^16.9.43",
+		"@types/react-dom": "^16.9.8",
 		"@types/webpack": "^4.41.21",
 		"@types/webpack-node-externals": "^1.7.1",
 		"babel-jest": "^26.1.0",

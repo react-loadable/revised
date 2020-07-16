@@ -11,7 +11,7 @@ window.main = () => {
 		console.assert(globalThis.descendantLoaded, 'descendant component loaded')
 		setTimeout(() => {
 			console.assert(globalThis.siblingLoaded, 'sibling module loaded')
-		}, '1000')
+		}, 1000)
 		console.log('assert ends')
 		ReactDOM.hydrate(<App/>, document.getElementById('app'))
 	})
