@@ -21,6 +21,14 @@ export interface LoadableManifest {
 	runtimeAssets: Record<string, string[] | undefined>
 	entryToId: Record<string, string>
 }
+const getAssetsOfChunkGroups = (chunkGroups?: ChunkGroup[]) => {
+	if (!chunkGroups) return
+	const assets = new Set<string>()
+	for (const chunkGroup of chunkGroups)
+		for (const asset of (chunkGroup as any).getFiles())
+			assets.add(asset)
+	return [...assets.values()]
+}
 const buildManifest = (compilation: Compilation, includeHotUpdate?: boolean, includeSourceMaps?: boolean) => {
 	const entryToId: Record<string, string> = {}
 	const runtimeAssets: Record<string, string[]> = {}
@@ -44,10 +52,6 @@ const buildManifest = (compilation: Compilation, includeHotUpdate?: boolean, inc
 					originToChunkGroups[origin.request].push(chunkGroup.id)
 			}
 
-	const {namedChunkGroups} = compilation.getStats().toJson({
-		all: false,
-		chunkGroups: true
-	})
 	const chunkGroupAssets: Record<string, string[]> = {}
 	const preloadAssets: Record<string, string[]> = {}
 	const prefetchAssets: Record<string, string[]> = {}
@@ -63,10 +67,9 @@ const buildManifest = (compilation: Compilation, includeHotUpdate?: boolean, inc
 			chunkGroupSizes[chunkGroup.id] = size
 
 			//child assets
-			const {prefetch, preload} = namedChunkGroups![chunkGroup.name]?.childAssets || {}
-			//TODO: helpme, is there a way to get childAssets of an unnamed chunkGroup?
-			preloadAssets[chunkGroup.id] = preload
-			prefetchAssets[chunkGroup.id] = prefetch
+			const {prefetch, preload} = chunkGroup.getChildrenByOrders()
+			preloadAssets[chunkGroup.id] = getAssetsOfChunkGroups(preload)
+			prefetchAssets[chunkGroup.id] = getAssetsOfChunkGroups(prefetch)
 		}
 
 	//sort for the greedy cover set algorithm
