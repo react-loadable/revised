@@ -2,12 +2,12 @@ import express from 'express'
 import path from 'path'
 import React from 'react'
 import ReactDOMServer from 'react-dom/server'
-import Loadable, {preloadAll} from '~react-loadable/revised'
+import {Capture, preloadAll} from '~react-loadable/revised'
 import {getBundles} from '~react-loadable/revised/webpack'
 import App from './components/App'
 import fs from 'fs'
 
-const getStats = () => JSON.parse(fs.readFileSync(path.resolve(__dirname, 'dist/client/react-loadable.json'), 'utf8'))
+const getStats = () => JSON.parse(fs.readFileSync(path.resolve(__dirname, 'dist/react-loadable.json'), 'utf8'))
 const app = express()
 
 const Links = ({assets, prefetch}) => {
@@ -47,9 +47,9 @@ const Html = ({assets, body, preload, prefetch}) => {
 app.get('/', (req, res) => {
 	const modules = []
 	const body = ReactDOMServer.renderToString(
-		<Loadable.Capture report={moduleName => modules.push(moduleName)}>
+		<Capture report={moduleName => modules.push(moduleName)}>
 			<App/>
-		</Loadable.Capture>
+		</Capture>
 	)
 	const {assets, preload, prefetch} = getBundles(getStats(), modules)
 

@@ -1,8 +1,8 @@
 import React from 'react'
-import Loadable from '~react-loadable/revised'
+import loadable from '~react-loadable/revised'
 import Loading from './Loading'
 
-const LoadableNested = Loadable({
+const LoadableNested = loadable({
 	loader: () => import(/*
 		webpackChunkName: 'example-nested'
 	*/'./ExampleNested'),

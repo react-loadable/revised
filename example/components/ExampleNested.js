@@ -1,8 +1,8 @@
 import React from 'react'
 import Loading from './Loading'
-import Loadable from '~react-loadable/revised'
+import loadable from '~react-loadable/revised'
 
-const LoadableDescendant = Loadable({
+const LoadableDescendant = loadable({
 	loader: () => import(/*
 		webpackChunkName: 'descendant',
 		webpackPrefetch: true

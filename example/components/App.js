@@ -1,8 +1,8 @@
 import React from 'react'
-import Loadable from '~react-loadable/revised'
+import loadable from '~react-loadable/revised'
 import Loading from './Loading'
 
-const LoadableExample = Loadable({
+const LoadableExample = loadable({
 	loader: () => import(/* webpackChunkName: 'example' */'./Example'),
 	loading: Loading,
 })

@@ -45,7 +45,7 @@ const client = {
 	},
 	plugins: [
 		new ReactLoadablePlugin({
-			filename: 'react-loadable.json',
+			filename: '../react-loadable.json',
 		}),
 	],
 	optimization: {

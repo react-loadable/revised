@@ -1,10 +1,10 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
-import Loadable from '~react-loadable/revised'
+import {preloadReady} from '~react-loadable/revised'
 import App from './components/App'
 
 window.main = () => {
-	Loadable.preloadReady().then(() => {
+	preloadReady().then(() => {
 		console.log('assert begins')
 		console.assert(globalThis.exampleLoaded, 'first level component loaded')
 		console.assert(globalThis.nestedExampleLoaded, 'nested level component loaded')
