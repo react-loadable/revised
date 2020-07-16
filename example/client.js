@@ -1,6 +1,6 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
-import Loadable from 'react-loadable'
+import Loadable from '~react-loadable/revised'
 import App from './components/App'
 
 window.main = () => {

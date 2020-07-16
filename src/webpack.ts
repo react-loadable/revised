@@ -88,7 +88,7 @@ export class ReactLoadablePlugin {
 			}
 			callback?.()
 		}
-		if (compiler.hooks) compiler.hooks.emit.tap('react-loadable', emit)
+		if (compiler.hooks) compiler.hooks.emit.tap('@react-loadable/revised', emit)
 		else compiler.plugin('emit', emit)
 	}
 }

@@ -2,8 +2,8 @@ import express from 'express'
 import path from 'path'
 import React from 'react'
 import ReactDOMServer from 'react-dom/server'
-import Loadable from 'react-loadable'
-import {getBundles} from 'react-loadable/webpack'
+import Loadable, {preloadAll} from '~react-loadable/revised'
+import {getBundles} from '~react-loadable/revised/webpack'
 import App from './components/App'
 import fs from 'fs'
 
@@ -64,7 +64,7 @@ ${ReactDOMServer.renderToStaticMarkup(<Html
 
 app.use('/dist', express.static(path.join(__dirname, 'dist', 'client')))
 
-Loadable.preloadAll().then(() => {
+preloadAll().then(() => {
 	app.listen(3000, () => {
 		console.log('Running on http://localhost:3000/')
 	})

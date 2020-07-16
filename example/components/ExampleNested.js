@@ -1,6 +1,6 @@
 import React from 'react'
 import Loading from './Loading'
-import Loadable from 'react-loadable'
+import Loadable from '~react-loadable/revised'
 
 const LoadableDescendant = Loadable({
 	loader: () => import(/*
