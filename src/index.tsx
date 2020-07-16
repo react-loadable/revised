@@ -7,8 +7,7 @@ const CaptureContext = createContext<((moduleId: string) => any) | undefined>(un
 declare const __webpack_modules__: any
 export type LoadComponent<ComponentProps> = {
 	default: ComponentType<ComponentProps>
-	__esModule: true
-} | (ComponentType<ComponentProps> & {__esModule: undefined})
+}
 export type LoaderType<ComponentProps> = () => Promise<LoadComponent<ComponentProps>>
 export type LoadableOptions<InputProps, IsSingle extends boolean, ComponentProps> = {
 	loading: ComponentType<{
@@ -102,7 +101,7 @@ const loadMap = <ComponentProps,>(obj: Record<string, LoaderType<ComponentProps>
 	return state
 }
 
-const resolve = <ComponentProps,>(obj: LoadComponent<ComponentProps>) => obj?.__esModule ? (obj as any).default : obj
+const resolve = <ComponentProps,>(obj: LoadComponent<ComponentProps>): ComponentType<ComponentProps> => (obj as any)?.__esModule ? (obj as any).default : obj
 const render = <ComponentProps, >(
 	loaded: LoadComponent<ComponentProps>,
 	props: ComponentProps
