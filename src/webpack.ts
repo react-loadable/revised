@@ -23,7 +23,7 @@ const buildManifest = (compilation: Compilation, includeHotUpdate?: boolean, inc
 	const includedChunkGroups = new Set<string>()
 	for (const chunkGroup of compilation.chunkGroups)
 		if (chunkGroup.isInitial())
-			includedChunkGroups.add(chunkGroup)
+			includedChunkGroups.add(chunkGroup.name)
 
 	// get map of origin to chunk groups
 	const originToChunkGroups: Record<string, string[]> = {}
