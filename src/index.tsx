@@ -15,7 +15,7 @@ export type LoadableOptions<InputProps, IsSingle extends boolean, ComponentProps
 		isLoading: boolean
 		pastDelay: boolean
 		timedOut: boolean
-		error: Error | null
+		error?: Error
 		retry: () => any
 	}>
 	delay?: number
@@ -35,13 +35,13 @@ const isWebpackReady = (getModuleIds: () => string[]) => typeof __webpack_module
 const load = <ComponentProps,>(loader: LoaderType<ComponentProps>) => {
 	const state = {
 		loading: true,
-		loaded: null,
-		error: null,
+		loaded: undefined,
+		error: undefined,
 	} as {
 		promise: Promise<LoadComponent<ComponentProps>>
 		loading: boolean
-		loaded: LoadComponent<ComponentProps> | null
-		error: Error | null
+		loaded?: LoadComponent<ComponentProps>
+		error?: Error
 	}
 	state.promise = new Promise(async (resolve, reject) => {
 		try {
@@ -62,11 +62,11 @@ const loadMap = <ComponentProps,>(obj: Record<string, LoaderType<ComponentProps>
 	const state = {
 		loading: false,
 		loaded: {},
-		error: null
+		error: undefined
 	} as {
 		loading: boolean
-		loaded: Record<string, LoadComponent<ComponentProps> | null>
-		error: Error | null
+		loaded: Record<string, LoadComponent<ComponentProps> | undefined>
+		error?: Error
 		promise: Promise<Array<LoadComponent<ComponentProps>>>
 	}
 	const promises: Array<Promise<LoadComponent<ComponentProps>>> = []
@@ -108,9 +108,9 @@ const render = <ComponentProps, >(
 	props: ComponentProps
 ) => React.createElement(resolve(loaded), props)
 
-type LoadedType<ComponentProps, IsSingle> = IsSingle extends true ? (LoadComponent<ComponentProps> | null) : Record<string, ComponentProps>
+type LoadedType<ComponentProps, IsSingle> = IsSingle extends true ? (LoadComponent<ComponentProps> | undefined) : Record<string, ComponentProps>
 type StateType<ComponentProps, IsSingle> = {
-	error: Error | null
+	error?: Error
 	pastDelay: boolean
 	timedOut: boolean
 	loading: boolean
@@ -123,7 +123,6 @@ const createLoadableComponent = <InputProps, IsSingle extends boolean, Component
 	if (!options.loading) throw new Error('react-loadable requires a `loading` component')
 	const opts = {
 		delay: 200,
-		timeout: null,
 		render,
 		...(options as unknown as LoadableOptions<ComponentProps, IsSingle, InputProps> & {
 			webpack: () => string[]
@@ -143,12 +142,20 @@ const createLoadableComponent = <InputProps, IsSingle extends boolean, Component
 			if (isWebpackReady(opts.webpack)) return init()
 		})
 
-	class LoadableComponent extends React.Component<ComponentProps & {report: ((moduleId: string) => any) | undefined}> {
-		private _mounted?: boolean
+	class LoadableComponent extends React.Component<{
+		props: ComponentProps
+		report: ((moduleId: string) => any) | undefined
+	}> {
+		public static displayName = 'LoadableComponent'
 		state: StateType<ComponentProps, IsSingle>
+		private _mounted?: boolean
 		private _delay!: ReturnType<typeof setTimeout>
 		private _timeout!: ReturnType<typeof setTimeout>
-		constructor(props: ComponentProps & {report: ((moduleId: string) => any) | undefined}) {
+
+		constructor(props: {
+			props: ComponentProps
+			report: ((moduleId: string) => any) | undefined
+		}) {
 			super(props)
 			init()
 			this.state = {
@@ -161,50 +168,9 @@ const createLoadableComponent = <InputProps, IsSingle extends boolean, Component
 			this._loadModule()
 		}
 		public componentDidMount() { this._mounted = true }
-		private async _loadModule() {
-			if (this.props.report && Array.isArray(opts.modules))
-			for (const moduleName of opts.modules) this.props.report!(moduleName)
-			if (!res.loading) return
-			const setStateWithMountCheck = (newState: Partial<StateType<ComponentProps, IsSingle>>) => {
-				if (!this._mounted) return
-				this.setState(newState)
-			}
-			if (typeof opts.delay === 'number') {
-				if (opts.delay === 0) {
-					if (this._mounted) this.setState({ pastDelay: true })
-					else this.state.pastDelay = true
-				} else {
-					this._delay = setTimeout(() => {
-						setStateWithMountCheck({ pastDelay: true })
-					}, opts.delay)
-				}
-			}
-			if (typeof opts.timeout === 'number') {
-				this._timeout = setTimeout(() => {
-					setStateWithMountCheck({ timedOut: true })
-				}, opts.timeout)
-			}
-			try { await res.promise } catch {} finally {
-				setStateWithMountCheck({
-					error: res.error,
-					loaded: res.loaded as any,
-					loading: res.loading
-				})
-				this._clearTimeouts()
-			}
-		}
 		public componentWillUnmount() {
 			this._mounted = false
 			this._clearTimeouts()
-		}
-		private _clearTimeouts() {
-			clearTimeout(this._delay)
-			clearTimeout(this._timeout)
-		}
-		retry() {
-			this.setState({ error: null, loading: true, timedOut: false })
-			res = (loadFn as any)(opts.loader)
-			this._loadModule()
 		}
 		public render() {
 			return <StrictMode>
@@ -215,17 +181,58 @@ const createLoadableComponent = <InputProps, IsSingle extends boolean, Component
 							pastDelay={this.state.pastDelay}
 							timedOut={this.state.timedOut}
 							error={this.state.error}
-							retry={this.retry}
+							retry={this._retry}
 						/>
 						: this.state.loaded
-						? opts.render(this.state.loaded as any, this.props)
+						? opts.render(this.state.loaded as any, this.props.props)
 						: null
 				}
 			</StrictMode>
 		}
+		private async _retry() {
+			this.setState({ error: undefined, loading: true, timedOut: false })
+			res = (loadFn as any)(opts.loader)
+			await this._loadModule()
+		}
+		private _setStateWithMountCheck(newState: Partial<StateType<ComponentProps, IsSingle>>) {
+			if (!this._mounted) return
+			this.setState(newState)
+		}
+		private async _loadModule() {
+			if (this.props.report && Array.isArray(opts.modules))
+				for (const moduleName of opts.modules) this.props.report(moduleName)
+			if (!res.loading) return
+			if (typeof opts.delay === 'number') {
+				if (opts.delay === 0) {
+					if (this._mounted) this.setState({ pastDelay: true })
+					else this.state.pastDelay = true
+				} else {
+					this._delay = setTimeout(() => {
+						this._setStateWithMountCheck({ pastDelay: true })
+					}, opts.delay)
+				}
+			}
+			if (typeof opts.timeout === 'number') {
+				this._timeout = setTimeout(() => {
+					this._setStateWithMountCheck({ timedOut: true })
+				}, opts.timeout)
+			}
+			try { await res.promise } catch {} finally {
+				this._clearTimeouts()
+				this._setStateWithMountCheck({
+					error: res.error,
+					loaded: res.loaded as any,
+					loading: res.loading
+				})
+			}
+		}
+		private _clearTimeouts() {
+			clearTimeout(this._delay)
+			clearTimeout(this._timeout)
+		}
 	}
 	const ContextWrapper = (props: ComponentProps) => <CaptureContext.Consumer>
-		{report => <LoadableComponent {...props} report={report}/>}
+		{report => <LoadableComponent props={props} report={report}/>}
 	</CaptureContext.Consumer>
 	ContextWrapper.preload = init
 	ContextWrapper.displayName = 'CaptureContextWrapper'

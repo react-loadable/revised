@@ -3,21 +3,21 @@
 exports[`LoadableComponent delay and timeout 1`] = `
 <div>
   MyLoadingComponent 
-  {"isLoading":true,"pastDelay":false,"timedOut":false,"error":null}
+  {"isLoading":true,"pastDelay":false,"timedOut":false}
 </div>
 `;
 
 exports[`LoadableComponent delay and timeout 2`] = `
 <div>
   MyLoadingComponent 
-  {"isLoading":true,"pastDelay":true,"timedOut":false,"error":null}
+  {"isLoading":true,"pastDelay":true,"timedOut":false}
 </div>
 `;
 
 exports[`LoadableComponent delay and timeout 3`] = `
 <div>
   MyLoadingComponent 
-  {"isLoading":true,"pastDelay":true,"timedOut":true,"error":null}
+  {"isLoading":true,"pastDelay":true,"timedOut":true}
 </div>
 `;
 
@@ -31,14 +31,14 @@ exports[`LoadableComponent delay and timeout 4`] = `
 exports[`LoadableComponent loadable map error 1`] = `
 <div>
   MyLoadingComponent 
-  {"isLoading":true,"pastDelay":false,"timedOut":false,"error":null}
+  {"isLoading":true,"pastDelay":false,"timedOut":false}
 </div>
 `;
 
 exports[`LoadableComponent loadable map error 2`] = `
 <div>
   MyLoadingComponent 
-  {"isLoading":true,"pastDelay":true,"timedOut":false,"error":null}
+  {"isLoading":true,"pastDelay":true,"timedOut":false}
 </div>
 `;
 
@@ -52,14 +52,14 @@ exports[`LoadableComponent loadable map error 3`] = `
 exports[`LoadableComponent loadable map success 1`] = `
 <div>
   MyLoadingComponent 
-  {"isLoading":true,"pastDelay":false,"timedOut":false,"error":null}
+  {"isLoading":true,"pastDelay":false,"timedOut":false}
 </div>
 `;
 
 exports[`LoadableComponent loadable map success 2`] = `
 <div>
   MyLoadingComponent 
-  {"isLoading":true,"pastDelay":true,"timedOut":false,"error":null}
+  {"isLoading":true,"pastDelay":true,"timedOut":false}
 </div>
 `;
 
@@ -79,14 +79,14 @@ exports[`LoadableComponent loadable map success 3`] = `
 exports[`LoadableComponent loading error 1`] = `
 <div>
   MyLoadingComponent 
-  {"isLoading":true,"pastDelay":false,"timedOut":false,"error":null}
+  {"isLoading":true,"pastDelay":false,"timedOut":false}
 </div>
 `;
 
 exports[`LoadableComponent loading error 2`] = `
 <div>
   MyLoadingComponent 
-  {"isLoading":true,"pastDelay":true,"timedOut":false,"error":null}
+  {"isLoading":true,"pastDelay":true,"timedOut":false}
 </div>
 `;
 
@@ -100,14 +100,14 @@ exports[`LoadableComponent loading error 3`] = `
 exports[`LoadableComponent loading success 1`] = `
 <div>
   MyLoadingComponent 
-  {"isLoading":true,"pastDelay":false,"timedOut":false,"error":null}
+  {"isLoading":true,"pastDelay":false,"timedOut":false}
 </div>
 `;
 
 exports[`LoadableComponent loading success 2`] = `
 <div>
   MyLoadingComponent 
-  {"isLoading":true,"pastDelay":true,"timedOut":false,"error":null}
+  {"isLoading":true,"pastDelay":true,"timedOut":false}
 </div>
 `;
 
@@ -128,7 +128,7 @@ exports[`LoadableComponent loading success 4`] = `
 exports[`LoadableComponent preload 1`] = `
 <div>
   MyLoadingComponent 
-  {"isLoading":true,"pastDelay":false,"timedOut":false,"error":null}
+  {"isLoading":true,"pastDelay":false,"timedOut":false}
 </div>
 `;
 
@@ -149,7 +149,7 @@ exports[`LoadableComponent preload 3`] = `
 exports[`LoadableComponent preloadReady delay with 0 1`] = `
 <div>
   MyLoadingComponent 
-  {"isLoading":true,"pastDelay":true,"timedOut":false,"error":null}
+  {"isLoading":true,"pastDelay":true,"timedOut":false}
 </div>
 `;
 
@@ -163,7 +163,7 @@ exports[`LoadableComponent preloadReady many 1`] = `
 exports[`LoadableComponent preloadReady missing 1`] = `
 <div>
   MyLoadingComponent 
-  {"isLoading":true,"pastDelay":false,"timedOut":false,"error":null}
+  {"isLoading":true,"pastDelay":false,"timedOut":false}
 </div>
 `;
 
@@ -177,21 +177,21 @@ exports[`LoadableComponent preloadReady one 1`] = `
 exports[`LoadableComponent preloadReady undefined 1`] = `
 <div>
   MyLoadingComponent 
-  {"isLoading":true,"pastDelay":false,"timedOut":false,"error":null}
+  {"isLoading":true,"pastDelay":false,"timedOut":false}
 </div>
 `;
 
 exports[`LoadableComponent render 1`] = `
 <div>
   MyLoadingComponent 
-  {"isLoading":true,"pastDelay":false,"timedOut":false,"error":null}
+  {"isLoading":true,"pastDelay":false,"timedOut":false}
 </div>
 `;
 
 exports[`LoadableComponent render 2`] = `
 <div>
   MyLoadingComponent 
-  {"isLoading":true,"pastDelay":true,"timedOut":false,"error":null}
+  {"isLoading":true,"pastDelay":true,"timedOut":false}
 </div>
 `;
 
