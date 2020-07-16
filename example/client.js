@@ -10,7 +10,8 @@ window.main = () => {
 		console.assert(globalThis.nestedExampleLoaded, 'nested level component loaded')
 		console.assert(globalThis.descendantLoaded, 'descendant component loaded')
 		setTimeout(() => {
-			console.assert(globalThis.siblingLoaded, 'sibling module loaded')
+			import('./components/Sibling') // note: await is avoid by purpose
+			setTimeout(() => console.assert(globalThis.siblingLoaded, 'sibling module loaded'))
 		}, 1000)
 		console.log('assert ends')
 		ReactDOM.hydrate(<App/>, document.getElementById('app'))

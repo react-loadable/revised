@@ -9,7 +9,8 @@ const LoadableExample = Loadable({
 
 export default function App() {
 	return <>
-		<p><strong>Check the console for more log</strong></p>
+		<p><strong>Check the console for more log.</strong></p>
+		<p><strong>Also, try disable javascript and reload the page.</strong></p>
 		<LoadableExample/>
 	</>
 }

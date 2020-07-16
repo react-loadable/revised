@@ -10,50 +10,56 @@ import fs from 'fs'
 const getStats = () => JSON.parse(fs.readFileSync(path.resolve(__dirname, 'dist/client/react-loadable.json'), 'utf8'))
 const app = express()
 
-const Html = ({styles, scripts, body}) => {
+const Links = ({assets, prefetch}) => {
+	const urls = assets.filter(file => file.endsWith('.css')).map(file => `/dist/${file}`)
+	return prefetch
+		? urls.map((url, index) => <link rel={prefetch} as="style" href={url} key={index}/>)
+		: urls.map((url, index) => <link rel="stylesheet" href={url} key={index}/>)
+}
+const Scripts = ({assets, prefetch}) => {
+	const urls = assets.filter(file => file.endsWith('.js')).map(file => `/dist/${file}`)
+	return prefetch
+		? urls.map((url, index) => <link rel={prefetch} as="script" href={url} key={index}/>)
+		: urls.map((url, index) => <script src={url} key={index}/>)
+}
+
+const Html = ({assets, body, preload, prefetch}) => {
 	return <html lang="en">
 		<head>
 			<meta charSet="UTF-8"/>
 			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 			<meta httpEquiv="X-UA-Compatible" content="ie=edge"/>
 			<title>My App</title>
-			{
-				styles.map((style, index) => {
-					return <link href={`/dist/${style.file}`} rel="stylesheet" key={index}/>
-				})
-			}
+			<Links assets={assets}/>
+			<Links assets={preload} prefetch="preload"/>
+			<Links assets={prefetch} prefetch="prefetch"/>
 		</head>
 		<body>
 		<div id="app" dangerouslySetInnerHTML={{__html: body}}/>
-		{
-			scripts.map((script, index) => {
-				return <script src={script.publicPath} key={index}/>
-			})
-		}
+		<Scripts assets={assets}/>
 		<script>window.main()</script>
+		<Scripts assets={preload} prefetch="preload"/>
+		<Scripts assets={prefetch} prefetch="prefetch"/>
 		</body>
 	</html>
 }
 
 app.get('/', (req, res) => {
-	let modules = []
-	let body = ReactDOMServer.renderToString(
+	const modules = []
+	const body = ReactDOMServer.renderToString(
 		<Loadable.Capture report={moduleName => modules.push(moduleName)}>
 			<App/>
 		</Loadable.Capture>
 	)
-	let bundles = getBundles(getStats(), modules).filter(Boolean)
-
-	let styles = bundles.filter(bundle => bundle.file.endsWith('.css'))
-	let scripts = bundles
-		.filter(bundle => bundle.file.endsWith('.js'))
-		.filter(
-			(bundle, index, arr) => bundle.publicPath !== mainJsPublicPath
-			&& !arr.slice(0, index).find(({file}) => file === bundle.file)
-		)
+	const {assets, preload, prefetch} = getBundles(getStats(), modules)
 
 	res.send(`<!doctype html>
-${ReactDOMServer.renderToStaticMarkup(<Html styles={styles} scripts={scripts} body={body}/>)}`)
+${ReactDOMServer.renderToStaticMarkup(<Html
+		assets={assets}
+		body={body}
+		preload={preload}
+		prefetch={prefetch}
+	/>)}`)
 })
 
 app.use('/dist', express.static(path.join(__dirname, 'dist', 'client')))

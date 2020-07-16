@@ -7,4 +7,5 @@ export const getSibling = () => import(
 	 webpackChunkName: 'sibling',
 	 webpackPreload: true
 	 */ './Sibling'
+	//try remove the webpackPreload comment, the assertion will fail
 	)

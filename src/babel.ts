@@ -2,17 +2,17 @@
 export default ({ types: t, template }) => ({
 	visitor: {
 		ImportDeclaration(path) {
-			let source = path.node.source.value
+			const source = path.node.source.value
 			if (source !== 'react-loadable') return
 
-			let defaultSpecifier = path.get('specifiers').find(specifier => {
+			const defaultSpecifier = path.get('specifiers').find(specifier => {
 				return specifier.isImportDefaultSpecifier()
 			})
 
 			if (!defaultSpecifier) return
 
-			let bindingName = defaultSpecifier.node.local.name
-			let binding = path.scope.getBinding(bindingName)
+			const bindingName = defaultSpecifier.node.local.name
+			const binding = path.scope.getBinding(bindingName)
 
 			binding.referencePaths.forEach(refPath => {
 				let callExpression = refPath.parentPath
@@ -21,34 +21,30 @@ export default ({ types: t, template }) => ({
 					callExpression.isMemberExpression() &&
 					callExpression.node.computed === false &&
 					callExpression.get('property').isIdentifier({ name: 'Map' })
-				) {
-					callExpression = callExpression.parentPath
-				}
+				) callExpression = callExpression.parentPath
 
 				if (!callExpression.isCallExpression()) return
 
-				let args = callExpression.get('arguments')
+				const args = callExpression.get('arguments')
 				if (args.length !== 1) throw callExpression.error
 
-				let options = args[0]
+				const options = args[0]
 				if (!options.isObjectExpression()) return
 
-				let properties = options.get('properties')
-				let propertiesMap = {}
+				const properties = options.get('properties')
+				const propertiesMap = {}
 
 				properties.forEach(property => {
 					if (property.type !== 'SpreadProperty') {
-						let key = property.get('key')
+						const key = property.get('key')
 						propertiesMap[key.node.name] = property
 					}
 				})
 
-				if (propertiesMap.webpack) {
-					return
-				}
+				if (propertiesMap.webpack) return
 
-				let loaderMethod = propertiesMap.loader.get('value')
-				let dynamicImports = []
+				const loaderMethod = propertiesMap.loader.get('value')
+				const dynamicImports = []
 
 				loaderMethod.traverse({
 					Import(path) {

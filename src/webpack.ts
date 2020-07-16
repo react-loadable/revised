@@ -2,14 +2,14 @@ import webpack, {Compiler} from 'webpack'
 import Compilation = webpack.compilation.Compilation
 import ChunkGroup = webpack.compilation.ChunkGroup
 
-const isOriginDynamicImported = (origin: string, chunkGroup: ChunkGroup) => {
+const isOriginDynamicImported = (origin: string, chunkGroup: any) => {
 	// check if origin is imported via import()
 	// for (const chunk of chunkGroup.chunks)
 	// 	for (const md of chunk.getModules())
 	// 		for (const {type, userRequest} of md.reasons)
 	// 			if (userRequest === origin && type === 'import()') return true
 	// return false
-	return true
+	return !!chunkGroup.name
 }
 
 export interface LoadableManifest {
@@ -60,6 +60,7 @@ const buildManifest = (compilation: Compilation, includeHotUpdate?: boolean, inc
 			(cg1, cg2) => chunkGroupSizes[cg1] - chunkGroupSizes[cg2]
 		)
 	return {
+		publicPath: compilation.outputOptions.publicPath,
 		originToChunkGroups,
 		chunkGroupAssets,
 		preloadAssets,
@@ -138,5 +139,9 @@ export const getBundles = (
 			continue
 		addChunkGroup(includingChunkGroups[0])
 	}
-	return {assets, preload, prefetch}
+	return {
+		assets: [...assets.values()],
+		preload: [...preload.values()],
+		prefetch: [...prefetch.values()]
+	}
 }
