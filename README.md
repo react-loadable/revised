@@ -1,6 +1,6 @@
 # A bug-free and actively maintained version of react-loadable
 
-Check the old readme [here](https://github.com/jamiebuilds/react-loadable).
+Check the old readme [here](/README-old.md).
 
 The new package name: `@react-loadable/revised`.
 
