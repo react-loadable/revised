@@ -2,14 +2,14 @@ import webpack, {Compiler} from 'webpack'
 import Compilation = webpack.compilation.Compilation
 import ChunkGroup = webpack.compilation.ChunkGroup
 
-const isOriginDynamicImported = (origin: string, chunkGroup: any) => {
+const isOriginDynamicImported = (origin: {request: string}, chunkGroup: any) => {
 	// check if origin is imported via import()
 	// for (const chunk of chunkGroup.chunks)
 	// 	for (const md of chunk.getModules())
 	// 		for (const {type, userRequest} of md.reasons)
-	// 			if (userRequest === origin && type === 'import()') return true
+	// 			if (userRequest === origin.request && type === 'import()') return true
 	// return false
-	return !!chunkGroup.name
+	return !!chunkGroup.name && !!origin.request
 }
 
 export interface LoadableManifest {
@@ -28,7 +28,8 @@ const buildManifest = (compilation: Compilation, includeHotUpdate?: boolean, inc
 			if (isOriginDynamicImported(origin, chunkGroup)) {
 				includedChunkGroups.add(chunkGroup.name)
 				if (!originToChunkGroups[origin.request]) originToChunkGroups[origin.request] = []
-				originToChunkGroups[origin.request].push(chunkGroup.name)
+				if (!originToChunkGroups[origin.request].includes(chunkGroup.name))
+					originToChunkGroups[origin.request].push(chunkGroup.name)
 			}
 
 	const {namedChunkGroups} = compilation.getStats().toJson({
