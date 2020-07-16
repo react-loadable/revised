@@ -17,13 +17,14 @@ There are several changes in this package compared to the origin.
 - Filter hot update assets by default. This can be changed by setting the options.
 - Simpler stats file format.
 - Rewritten in Typescript.
+- Converted to ES6 module.
 
 # API changes
 
 Almost APIs are the same as the original `react-loadable`, except the `getBundles` function.
 The new API interface is as follows.
 
-`getBundles(stats, modules, options)`
+1. `getBundles(stats, modules, options)`
  
 - return `{assets, preload, prefetch}`.
  Where `assets`, `preload`, `prefetch` are the main assets, preload assets, prefetch assets, respectively.
@@ -31,3 +32,24 @@ The new API interface is as follows.
     * `entries`: `string[]` (default: `['main']`). Name of the entries in webpack.
     * `includeHotUpdate`: `boolean` (default: `false`). Specify whether hot update assets are included. 
     * `includeSourceMap`: `boolean` (default: `false`). Specify whether source maps are included. 
+
+2. The `filename` option in the webpack plugin now is relative to the output path regardless of whether the `filename` value is absolute or relative.
+
+3. All exported modules are in ES6.
+
+Old:
+
+```javascript
+const loadable = require('react-loadable')
+//loadable.Map
+//loadable.preloadAll
+//loadable.preloadReady
+```
+
+New:
+
+```javascript
+import loadable, {LoadableMap, preloadAll, preloadReady} from '@react-loadable/revised'
+```
+
+3. `Map` is renamed to `LoadableMap` to avoid conflicting with the ES6 Map.

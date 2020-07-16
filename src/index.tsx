@@ -239,21 +239,20 @@ const createLoadableComponent = <InputProps, IsSingle extends boolean, Component
 	return ContextWrapper
 }
 
-const Loadable = <InputProps, ComponentProps>(opts: LoadableOptions<InputProps, true, ComponentProps>) => createLoadableComponent(load, opts)
-Loadable.Map = <InputProps, ComponentProps>(opts: LoadableOptions<InputProps, false, ComponentProps>) => {
+export default <InputProps, ComponentProps>(opts: LoadableOptions<InputProps, true, ComponentProps>) => createLoadableComponent(load, opts)
+export const LoadableMap = <InputProps, ComponentProps>(opts: LoadableOptions<InputProps, false, ComponentProps>) => {
 	if (typeof opts.render !== 'function')
 		throw new Error('LoadableMap requires a `render(loaded, props)` function')
 	return createLoadableComponent(loadMap, opts)
 }
 
-const Capture = ({children, report}: {
+export const Capture = ({children, report}: {
 	children: ReactNode
 	report: (moduleId: string) => any
 }) => <CaptureContext.Provider value={report}>
 	{children}
 </CaptureContext.Provider>
 Capture.displayName = 'Capture'
-Loadable.Capture = Capture
 
 const flushInitializers = async (initializers: typeof ALL_INITIALIZERS): Promise<void> => {
 	const promises = []
@@ -261,7 +260,5 @@ const flushInitializers = async (initializers: typeof ALL_INITIALIZERS): Promise
 	await Promise.all(promises)
 	if (initializers.length) return flushInitializers(initializers)
 }
-Loadable.preloadAll = () => flushInitializers(ALL_INITIALIZERS)
-Loadable.preloadReady = () => flushInitializers(READY_INITIALIZERS)
-
-export default Loadable
+export const preloadAll = () => flushInitializers(ALL_INITIALIZERS)
+export const preloadReady = () => flushInitializers(READY_INITIALIZERS)

@@ -1,7 +1,7 @@
 import 'regenerator-runtime'
 import React from 'react'
 import renderer from 'react-test-renderer'
-import Loadable from '../src/index'
+import Loadable, {LoadableMap, preloadAll, preloadReady} from '../src/index'
 
 function waitFor(delay) {
 	return new Promise(resolve => {
@@ -32,7 +32,7 @@ function MyComponent(props) {
 describe('LoadableComponent', () => {
 	afterEach(async () => {
 		try {
-			await Loadable.preloadAll()
+			await preloadAll()
 		} catch (err) {}
 	})
 
@@ -95,7 +95,7 @@ describe('LoadableComponent', () => {
 			loading: MyLoadingComponent,
 		})
 
-		await Loadable.preloadAll()
+		await preloadAll()
 
 		let component = renderer.create(<LoadableMyComponent prop="baz" />)
 
@@ -108,7 +108,7 @@ describe('LoadableComponent', () => {
 			loading: MyLoadingComponent,
 		})
 
-		await Loadable.preloadAll()
+		await preloadAll()
 
 		let component = renderer.create(<LoadableMyComponent prop="baz" />)
 
@@ -151,7 +151,7 @@ describe('LoadableComponent', () => {
 	})
 
 	test('loadable map success', async () => {
-		let LoadableMyComponent = Loadable.Map({
+		let LoadableMyComponent = LoadableMap({
 			loader: {
 				a: createLoader(200, () => ({ MyComponent })),
 				b: createLoader(400, () => ({ MyComponent })),
@@ -176,7 +176,7 @@ describe('LoadableComponent', () => {
 	})
 
 	test('loadable map error', async () => {
-		let LoadableMyComponent = Loadable.Map({
+		let LoadableMyComponent = LoadableMap({
 			loader: {
 				a: createLoader(200, () => ({ MyComponent })),
 				b: createLoader(400, null, new Error('test error')),
@@ -215,7 +215,7 @@ describe('LoadableComponent', () => {
 				loading: MyLoadingComponent,
 			})
 
-			await Loadable.preloadReady()
+			await preloadReady()
 
 			let component = renderer.create(<LoadableMyComponent prop="baz" />)
 
@@ -229,7 +229,7 @@ describe('LoadableComponent', () => {
 				webpack: () => [1],
 			})
 
-			await Loadable.preloadReady()
+			await preloadReady()
 
 			let component = renderer.create(<LoadableMyComponent prop="baz" />)
 
@@ -243,7 +243,7 @@ describe('LoadableComponent', () => {
 				webpack: () => [1, 2],
 			})
 
-			await Loadable.preloadReady()
+			await preloadReady()
 
 			let component = renderer.create(<LoadableMyComponent prop="baz" />)
 
@@ -257,7 +257,7 @@ describe('LoadableComponent', () => {
 				webpack: () => [1, 42],
 			})
 
-			await Loadable.preloadReady()
+			await preloadReady()
 
 			let component = renderer.create(<LoadableMyComponent prop="baz" />)
 
