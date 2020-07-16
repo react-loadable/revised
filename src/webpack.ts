@@ -168,15 +168,25 @@ export const getBundles = (
 		addChunkGroup(includingChunkGroups[0])
 	}
 	const getOrder = (asset: string) => {
+		if (!asset.endsWith('.js')) return 0
 		for (const entry of entries)
 			if (runtimeAssets[entry]?.includes(asset)) return -1
 		for (const entry of entries)
 			if (chunkGroupAssets[entry]?.includes(asset)) return 1
 		return 0
 	}
-	const assetToArray = (assets: Set<string>) => [...assets.values()].sort(
-		(as1, as2) => getOrder(as1) - getOrder(as2)
-	).map(file => `${publicPath}${file}`)
+	const assetToArray = (assets: Set<string>) => [...assets.values()]
+		.map((asset, index) => [asset, index] as [string, number])
+		.sort(
+			([as1, index1], [as2, index2]) => {
+				const order1 = getOrder(as1)
+				const order2 = getOrder(as2)
+				if (order1 === order2) return index1 - index2
+				return order1 - order2
+			}
+		)
+		.map(([asset]) => asset)
+		.map(file => `${publicPath}${file}`)
 	return {
 		assets: assetToArray(assets),
 		preload: assetToArray(preload),
