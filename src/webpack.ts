@@ -13,6 +13,7 @@ const isOriginDynamicImported = (origin: string, chunkGroup: any) => {
 }
 
 export interface LoadableManifest {
+	publicPath?: string
 	originToChunkGroups: Record<string, string[]>
 	chunkGroupAssets: Record<string, string[]>
 	preloadAssets: Record<string, string[]>
@@ -93,18 +94,22 @@ export class ReactLoadablePlugin {
 
 export const getBundles = (
 	{
+		publicPath: defaultPublicPath,
 		originToChunkGroups,
 		chunkGroupAssets,
 		preloadAssets,
 		prefetchAssets,
 	}: LoadableManifest,
 	moduleIds: string[],
-	{entries, includeSourceMap, includeHotUpdate}: {
+	{entries, includeSourceMap, includeHotUpdate, publicPath}: {
+		publicPath?: string
 		entries?: string[]
 		includeHotUpdate?: boolean
 		includeSourceMap?: boolean
 	} = {}
 ) => {
+	if (typeof publicPath !== 'string') publicPath = defaultPublicPath || ''
+	const prefixPublicPath = (file: string) => `${publicPath}${file}`
 	const assetFilter = (
 		file: string
 	) => (includeHotUpdate || !/\.hot-update\.js$/.test(file))
@@ -123,9 +128,9 @@ export const getBundles = (
 			console.warn(`Can not find chunk group ${chunkGroup}`)
 			return
 		}
-		for (const asset of chunkGroupAssets[chunkGroup].filter(assetFilter)) assets.add(asset)
-		for (const asset of preloadAssets[chunkGroup].filter(assetFilter)) preload.add(asset)
-		for (const asset of prefetchAssets[chunkGroup].filter(assetFilter)) prefetch.add(asset)
+		for (const asset of chunkGroupAssets[chunkGroup].filter(assetFilter).map(prefixPublicPath)) assets.add(asset)
+		for (const asset of preloadAssets[chunkGroup].filter(assetFilter).map(prefixPublicPath)) preload.add(asset)
+		for (const asset of prefetchAssets[chunkGroup].filter(assetFilter).map(prefixPublicPath)) prefetch.add(asset)
 	}
 
 	for (const entry of entries) addChunkGroup(entry)

@@ -32,6 +32,7 @@ The new API interface is as follows.
     * `entries`: `string[]` (default: `['main']`). Name of the entries in webpack.
     * `includeHotUpdate`: `boolean` (default: `false`). Specify whether hot update assets are included. 
     * `includeSourceMap`: `boolean` (default: `false`). Specify whether source maps are included. 
+    * `publicPath`: `string` (default: `publicPath` value in the webpack config). Overwrite the `publicPath` config.
 
 2. The `filename` option in the webpack plugin now is relative to the output path regardless of whether the `filename` value is absolute or relative.
 
