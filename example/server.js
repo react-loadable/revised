@@ -33,12 +33,12 @@ const Html = ({assets, body, preload, prefetch}) => {
 			<Links assets={assets}/>
 			<Links assets={preload} prefetch="preload"/>
 			<Links assets={prefetch} prefetch="prefetch"/>
+			<Scripts assets={preload} prefetch="preload"/>
+			<Scripts assets={prefetch} prefetch="prefetch"/>
 		</head>
 		<body>
 		<div id="app" dangerouslySetInnerHTML={{__html: body}}/>
 		<Scripts assets={assets}/>
-		<Scripts assets={preload} prefetch="preload"/>
-		<Scripts assets={prefetch} prefetch="prefetch"/>
 		</body>
 	</html>
 }

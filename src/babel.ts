@@ -18,13 +18,13 @@ export default ({ types: t, template }) => ({
 					callExpression.node.computed === false &&
 					callExpression.get('property').isIdentifier({ name: 'LoadableMap' })
 				) callExpression = callExpression.parentPath
-				if (!callExpression.isCallExpression()) return
+				if (!callExpression.isCallExpression()) continue
 
 				const args = callExpression.get('arguments')
 				if (args.length !== 1) throw callExpression.error
 
 				const options = args[0]
-				if (!options.isObjectExpression()) return
+				if (!options.isObjectExpression()) continue
 
 				const properties = options.get('properties')
 				const propertiesMap = {}
@@ -35,7 +35,7 @@ export default ({ types: t, template }) => ({
 						propertiesMap[key.node.name] = property
 					}
 				}
-				if (propertiesMap.webpack) return
+				if (propertiesMap.webpack) continue
 
 				const loaderMethod = propertiesMap.loader.get('value')
 				const dynamicImports = []
@@ -44,7 +44,7 @@ export default ({ types: t, template }) => ({
 						dynamicImports.push(path.parentPath)
 					}
 				})
-				if (!dynamicImports.length) return
+				if (!dynamicImports.length) continue
 
 				propertiesMap.loader.insertAfter(
 					t.objectProperty(
