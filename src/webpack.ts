@@ -122,11 +122,12 @@ export const getBundles = (
 		entryToId,
 	}: LoadableManifest,
 	moduleIds: string[],
-	{entries, includeSourceMap, includeHotUpdate, publicPath}: {
+	{entries, includeSourceMap, includeHotUpdate, publicPath, preserveEntriesOrder}: {
 		publicPath?: string
 		entries?: string[]
 		includeHotUpdate?: boolean
 		includeSourceMap?: boolean
+		preserveEntriesOrder?: boolean
 	} = {}
 ) => {
 	if (typeof publicPath !== 'string') publicPath = defaultPublicPath || ''
@@ -175,17 +176,20 @@ export const getBundles = (
 			if (chunkGroupAssets[entry]?.includes(asset)) return 1
 		return 0
 	}
-	const assetToArray = (assets: Set<string>) => [...assets.values()]
-		.map((asset, index) => [asset, index] as [string, number])
-		.sort(
-			([as1, index1], [as2, index2]) => {
-				const order1 = getOrder(as1)
-				const order2 = getOrder(as2)
-				if (order1 === order2) return index1 - index2
-				return order1 - order2
-			}
-		)
-		.map(([asset]) => asset)
+	const assetToArray = (assets: Set<string>) => (
+		values => preserveEntriesOrder
+			? values
+			: values.map((asset, index) => [asset, index] as [string, number])
+				.sort(
+					([as1, index1], [as2, index2]) => {
+						const order1 = getOrder(as1)
+						const order2 = getOrder(as2)
+						if (order1 === order2) return index1 - index2
+						return order1 - order2
+					}
+				)
+				.map(([asset]) => asset)
+	)([...assets.values()])
 		.map(file => `${publicPath}${file}`)
 	return {
 		assets: assetToArray(assets),

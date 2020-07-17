@@ -33,7 +33,34 @@ The new API interface is as follows.
     * `entries`: `string[]` (default: `['main']`). Name of the entries in webpack.
     * `includeHotUpdate`: `boolean` (default: `false`). Specify whether hot update assets are included. 
     * `includeSourceMap`: `boolean` (default: `false`). Specify whether source maps are included. 
-    * `publicPath`: `string` (default: `publicPath` value in the webpack config). Overwrite the `publicPath` config.
+    * `publicPath`: `string` (default: `output.publicPath` value in the webpack config). Overwrite the `output.publicPath` config.
+    * `preserveEntriesOrder`: `boolean` (default: `false`). If `true` the javascript assets of the entry chunks will nott be moved to the end of the returned arrays.
+    
+Note: if `preserveEntriesOrder` is set (`true`), to prevent the dynamically imported components (lodable components) being loaded twice, the entry should be executed after everything is loaded.
+
+Check this example, the main logic of the entry is placed in a global function, and executed after all.
+
+```javascript
+import {preloadReady} from '@react-loadable/revised'
+import React from 'react'
+
+window.main = async () => {
+    try {
+      await preloadReady()
+    } catch (e){console.error(e)}
+    } finally {
+      React.hydrate(<App/>, document.getElementById('#root'))
+    }
+}
+```
+
+In the server side:
+
+```javascript
+{assets.filter(url => url.endsWith('.css')).map(url => <link rel="stylesheet" href={url} key={url}/>}
+{assets.filter(url => url.endsWith('.js')).map(url => <script src={url} key={url}/>}
+<script>window.main()</script>
+```
 
 2. The `filename` option in the webpack plugin now is relative to the output path regardless of whether the `filename` value is absolute or relative.
 
@@ -59,7 +86,7 @@ import loadable, {LoadableMap, preloadAll, preloadReady} from '@react-loadable/r
 
 3. `Map` is renamed to `LoadableMap` to avoid conflicting with the ES6 Map.
 
-4. (Advanced) The output assets are returned in the following orders.
-- Highest order (first elements): runtime assets which belong to at least one of the input entries (specified via the `options` parameter).
-- Lower order (last elements): assets which belong to at least one of the input entries, but are not runtime assets.
-- All other assets are returned between these above-mentioned assets.
+4. (Advanced) The output assets are returned in the following orders unless the `preserveEntriesOrder` option is set.
+- Highest order (first elements): javascript assets which belong to at least one of the input entries (specified via the `options` parameter).
+- Lower order (last elements): javascript assets which belong to at least one of the input entries, but are not runtime assets.
+- All other assets' orders are kept unchnaged.
