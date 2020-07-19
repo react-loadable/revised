@@ -1,4 +1,4 @@
-import React, {ComponentType, createContext, ReactNode, StrictMode} from 'react'
+import React, {ComponentType, createContext, ReactNode} from 'react'
 
 const ALL_INITIALIZERS: Array<() => any> = []
 const READY_INITIALIZERS: Array<() => any> = []
@@ -172,21 +172,17 @@ const createLoadableComponent = <InputProps, IsSingle extends boolean, Component
 			this._clearTimeouts()
 		}
 		public render() {
-			return <StrictMode>
-				{
-					this.state.loading || this.state.error
-						? <opts.loading
-							isLoading={this.state.loading}
-							pastDelay={this.state.pastDelay}
-							timedOut={this.state.timedOut}
-							error={this.state.error}
-							retry={this._retry}
-						/>
-						: this.state.loaded || null
-						? opts.render(this.state.loaded as any, this.props.props)
-						: null
-				}
-			</StrictMode>
+			return this.state.loading || this.state.error
+				? <opts.loading
+					isLoading={this.state.loading}
+					pastDelay={this.state.pastDelay}
+					timedOut={this.state.timedOut}
+					error={this.state.error}
+					retry={this._retry}
+				/>
+				: this.state.loaded || null
+					? opts.render(this.state.loaded as any, this.props.props)
+					: null
 		}
 		private async _retry() {
 			this.setState({ error: undefined, loading: true, timedOut: false })
