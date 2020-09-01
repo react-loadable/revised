@@ -181,25 +181,25 @@ const createLoadableComponent = <InputProps, IsSingle extends boolean, Component
 					retry={this._retry}
 				/>
 				: this.state.loaded || null
-					? opts.render(this.state.loaded as any, this.props.props)
+					? opts.render(this.state.loaded as any, super.props.props)
 					: null
 		}
 		private async _retry() {
-			this.setState({ error: undefined, loading: true, timedOut: false })
+			super.setState({ error: undefined, loading: true, timedOut: false })
 			res = (loadFn as any)(opts.loader)
 			await this._loadModule()
 		}
 		private _setStateWithMountCheck(newState: Partial<StateType<ComponentProps, IsSingle>>) {
 			if (!this._mounted) return
-			this.setState(newState)
+			super.setState(newState)
 		}
 		private async _loadModule() {
-			if (this.props.report && Array.isArray(opts.modules))
+			if (super.props.report && Array.isArray(opts.modules))
 				for (const moduleName of opts.modules) this.props.report(moduleName)
 			if (!res.loading) return
 			if (typeof opts.delay === 'number') {
 				if (opts.delay === 0) {
-					if (this._mounted) this.setState({ pastDelay: true })
+					if (this._mounted) super.setState({ pastDelay: true })
 					else this.state.pastDelay = true
 				} else {
 					this._delay = setTimeout(() => {
