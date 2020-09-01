@@ -182,7 +182,7 @@ const createLoadableComponent = <InputProps, IsSingle extends boolean, Component
 					retry={this._retry}
 				/>
 				: this.state.loaded || null
-					? opts.render(this.state.loaded as any, super.props.props)
+					? opts.render(this.state.loaded as any, this.props.props)
 					: null
 		}
 		private async _retry() {
@@ -195,7 +195,7 @@ const createLoadableComponent = <InputProps, IsSingle extends boolean, Component
 			super.setState(newState)
 		}
 		private async _loadModule() {
-			if (super.props.report && Array.isArray(opts.modules))
+			if (this.props.report && Array.isArray(opts.modules))
 				for (const moduleName of opts.modules) this.props.report(moduleName)
 			if (!res.loading) return
 			if (typeof opts.delay === 'number') {
