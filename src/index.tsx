@@ -3,6 +3,7 @@ import React, {ComponentType, createContext, ReactNode} from 'react'
 const ALL_INITIALIZERS: Array<() => any> = []
 const READY_INITIALIZERS: Array<() => any> = []
 const CaptureContext = createContext<((moduleId: string) => any) | undefined>(undefined)
+CaptureContext.displayName = 'Capture'
 
 declare const __webpack_modules__: any
 export type LoadComponent<ComponentProps> = {
