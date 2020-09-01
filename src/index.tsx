@@ -195,8 +195,11 @@ const createLoadableComponent = <InputProps, IsSingle extends boolean, Component
 			super.setState(newState)
 		}
 		private async _loadModule() {
-			if (this.props.report && Array.isArray(opts.modules))
-				for (const moduleName of opts.modules) this.props.report(moduleName)
+			if (
+				this.props.report && Array.isArray(opts.modules)
+			) for (
+				const moduleName of opts.modules
+			) this.props.report(moduleName)
 			if (!res.loading) return
 			if (typeof opts.delay === 'number') {
 				if (opts.delay === 0) {
