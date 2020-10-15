@@ -12,6 +12,7 @@ This is a revised and actively maintained version of the original `react-loadabl
 
 There are several changes in this package compared to the origin.
 
+- Support webpack 5, and also previous versions.
 - Support newer webpack by loading assets from chunk groups, instead of from chunks.
 - Support preload, prefetch assets.
 - Filter hot update assets by default. This can be changed by setting the options.
