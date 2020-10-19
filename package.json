@@ -1,6 +1,6 @@
 {
 	"name": "@react-loadable/revised",
-	"version": "0.0.19",
+	"version": "0.0.20",
 	"description": "A higher order component for loading components with promises",
 	"main": "lib/index.js",
 	"author": "Tran Sang <tr@nsang.me>",
@@ -17,7 +17,8 @@
 		"test": "jest --coverage",
 		"build": "tsc --downlevelIteration --jsx react --declaration --esModuleInterop --outDir ./lib/ src/* && tsc --declaration webpack.ts && tsc --declaration babel.ts",
 		"clean": "rm -rf coverage lib example/dist node_modules/.cache",
-		"start": "yarn build && webpack --mode=development && node example/dist/server/main.js"
+		"start": "yarn build && webpack --mode=development && node example/dist/server/main.js",
+		"prepublishOnly": "yarn test && yarn clean && yarn build"
 	},
 	"dependencies": {},
 	"devDependencies": {
