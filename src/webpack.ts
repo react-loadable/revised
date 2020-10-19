@@ -1,6 +1,4 @@
-import webpack, {Compiler} from 'webpack'
-import Compilation = webpack.compilation.Compilation
-import ChunkGroup = webpack.compilation.ChunkGroup
+import {Compilation, Compiler, ChunkGroup } from 'webpack'
 
 const isOriginDynamicImported = (origin: {request: string}, chunkGroup: any) => {
 	// check if origin is imported via import()
@@ -38,6 +36,8 @@ const buildManifest = (compilation: Compilation, includeHotUpdate?: boolean, inc
 		if (chunkGroup.isInitial()) {
 			entryToId[chunkGroup.name] = chunkGroup.id
 			includedChunkGroups.add(chunkGroup.id)
+			// TODO: correct typing
+			// @ts-ignore
 			runtimeAssets[chunkGroup.id] = chunkGroup.getRuntimeChunk()?.files
 		}
 
@@ -66,6 +66,8 @@ const buildManifest = (compilation: Compilation, includeHotUpdate?: boolean, inc
 			for (const chunk of chunkGroup.chunks) size += chunk.size()
 			chunkGroupSizes[chunkGroup.id] = size
 
+			// TODO: correct typing
+			// @ts-ignore
 			//child assets
 			const {prefetch, preload} = chunkGroup.getChildrenByOrders()
 			preloadAssets[chunkGroup.id] = getAssetsOfChunkGroups(preload)
@@ -100,14 +102,27 @@ export class ReactLoadablePlugin {
 		const emit = (compilation: Compilation, callback?: () => any) => {
 			const manifest = buildManifest(compilation, this.options.includeHotUpdate, this.options.includeSourceMap)
 			const json = JSON.stringify(manifest, null, 2)
-			compilation.assets[this.options.filename] = {
-				source() { return json },
-				size() { return json.length }
-			}
+			compilation.emitAsset(
+				this.options.filename,
+				// TODO: correct typing
+				// @ts-ignore
+				{
+					source() { return json },
+					size() { return json.length }
+				}
+			)
+			/**
+			 *
+	constructor();
+	map(options: MapOptions): Object;
+	sourceAndMap(options: MapOptions): { source: string | Buffer; map: Object };
+	updateHash(hash: Hash): void;
+	buffer(): Buffer;
+			 */
 			callback?.()
 		}
 		if (compiler.hooks) compiler.hooks.emit.tap('@react-loadable/revised', emit)
-		else compiler.plugin('emit', emit)
+		else (compiler as any).plugin('emit', emit)
 	}
 }
 
