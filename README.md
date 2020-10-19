@@ -65,9 +65,6 @@ In the server side:
 
 2. The `filename` option in the webpack plugin now is relative to the output path regardless of whether the `filename` value is absolute or relative.
 
-Usually the output directory of the bundles for the client build is public.
-Therefore, to prevent exposing the build information, it is highly recommended to specify another directory by prefixing this config with `..`.
-
 3. All exported modules are in ES6.
 
 Old:
