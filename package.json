@@ -52,6 +52,6 @@
 	},
 	"peerDependencies": {
 		"react": "*",
-		"webpack": "^4.44.2 | ^5.10.0"
+		"webpack": "^4.44.2 || ^5.10.0"
 	}
 }
