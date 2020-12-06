@@ -1,6 +1,9 @@
-import {Compilation, Compiler, ChunkGroup } from 'webpack'
+import webpack, {Chunk, ChunkGraph, Compilation, Compiler} from 'webpack'
 
-const isOriginDynamicImported = (origin: {request: string}, chunkGroup: any) => {
+type ChunkGroup = Parameters<typeof Chunk.prototype.addGroup>[0]
+type Entrypoint = Parameters<typeof ChunkGraph.prototype.connectChunkAndEntryModule>[2]
+
+const isOriginDynamicImported = (origin: {request: string}, _chunkGroup: ChunkGroup) => {
 	// check if origin is imported via import()
 	// for (const chunk of chunkGroup.chunks)
 	// 	for (const md of chunk.getModules())
@@ -27,18 +30,16 @@ const getAssetsOfChunkGroups = (chunkGroups?: ChunkGroup[]) => {
 			assets.add(asset)
 	return [...assets.values()]
 }
-const buildManifest = (compilation: Compilation, includeHotUpdate?: boolean, includeSourceMaps?: boolean) => {
+const buildManifest = (compilation: Compilation, _includeHotUpdate?: boolean, _includeSourceMaps?: boolean) => {
 	const entryToId: Record<string, string> = {}
 	const runtimeAssets: Record<string, string[]> = {}
 	const includedChunkGroups = new Set<string>()
-	//always add entries
+	// always add entries
 	for (const chunkGroup of compilation.chunkGroups)
 		if (chunkGroup.isInitial()) {
 			entryToId[chunkGroup.name] = chunkGroup.id
 			includedChunkGroups.add(chunkGroup.id)
-			// TODO: correct typing
-			// @ts-ignore
-			runtimeAssets[chunkGroup.id] = chunkGroup.getRuntimeChunk()?.files
+			runtimeAssets[chunkGroup.id] = [...(chunkGroup as Entrypoint).getRuntimeChunk().files.values()]
 		}
 
 	// get map of origin to chunk groups
@@ -63,13 +64,13 @@ const buildManifest = (compilation: Compilation, includeHotUpdate?: boolean, inc
 
 			//get chunk group size
 			let size = 0
-			for (const chunk of chunkGroup.chunks) size += chunk.size()
+			for (const chunk of chunkGroup.chunks) size += compilation.chunkGraph
+				? compilation.chunkGraph.getChunkSize(chunk)
+				: chunk.size()
 			chunkGroupSizes[chunkGroup.id] = size
 
-			// TODO: correct typing
-			// @ts-ignore
 			//child assets
-			const {prefetch, preload} = chunkGroup.getChildrenByOrders()
+			const {prefetch, preload} = chunkGroup.getChildrenByOrders(compilation.moduleGraph, compilation.chunkGraph)
 			preloadAssets[chunkGroup.id] = getAssetsOfChunkGroups(preload)
 			prefetchAssets[chunkGroup.id] = getAssetsOfChunkGroups(prefetch)
 		}
@@ -90,7 +91,9 @@ const buildManifest = (compilation: Compilation, includeHotUpdate?: boolean, inc
 	}
 }
 
-
+const pluginName = '@react-loadable/revised'
+// https://github.com/webpack/webpack/issues/11425#issuecomment-686607633
+const {RawSource} = webpack.sources || require('webpack-sources')
 export class ReactLoadablePlugin {
 	constructor(private options: {
 		filename: string
@@ -99,30 +102,35 @@ export class ReactLoadablePlugin {
 	}) {}
 
 	apply(compiler: Compiler) {
-		const emit = (compilation: Compilation, callback?: () => any) => {
-			const manifest = buildManifest(compilation, this.options.includeHotUpdate, this.options.includeSourceMap)
-			const json = JSON.stringify(manifest, null, 2)
-			compilation.emitAsset(
-				this.options.filename,
-				// TODO: correct typing
-				// @ts-ignore
-				{
-					source() { return json },
-					size() { return json.length }
-				}
-			)
-			/**
-			 *
-	constructor();
-	map(options: MapOptions): Object;
-	sourceAndMap(options: MapOptions): { source: string | Buffer; map: Object };
-	updateHash(hash: Hash): void;
-	buffer(): Buffer;
-			 */
-			callback?.()
+		const emit = (compilation: Compilation) => {
+			try {
+				const manifest = buildManifest(compilation, this.options.includeHotUpdate, this.options.includeSourceMap)
+				const json = JSON.stringify(manifest, null, 2)
+				compilation.emitAsset(
+					this.options.filename,
+					new RawSource(json)
+				)
+			} catch (e) {
+				compilation.errors.push(e)
+			}
 		}
-		if (compiler.hooks) compiler.hooks.emit.tap('@react-loadable/revised', emit)
-		else (compiler as any).plugin('emit', emit)
+		if (compiler.hooks) {
+			if (
+				webpack.version.slice(0, 2) === '4.'
+			) compiler.hooks.emit.tap(pluginName, emit)
+			// hooks.thisCompilation is recommended over hooks.compilation
+			// https://github.com/webpack/webpack/issues/11425#issuecomment-690547848
+			else compiler.hooks.thisCompilation.tap(pluginName, compilation => {
+				compilation.hooks.processAssets.tap(
+					{
+						name: pluginName,
+						stage: Compilation.PROCESS_ASSETS_STAGE_ADDITIONAL,
+					},
+					() => emit(compilation)
+				)
+			})
+			compiler.hooks.emit.tap(pluginName, emit)
+		} else (compiler as any).plugin('emit', emit)
 	}
 }
 

@@ -1,5 +1,4 @@
-// @ts-nocheck
-export default ({ types: t, template }) => ({
+export default ({ types: t, /*template*/ }) => ({
 	visitor: {
 		ImportDeclaration(path) {
 			const source = path.node.source.value
@@ -27,7 +26,7 @@ export default ({ types: t, template }) => ({
 				if (!options.isObjectExpression()) continue
 
 				const properties = options.get('properties')
-				const propertiesMap = {}
+				const propertiesMap: any = {}
 
 				for (const property of properties) {
 					if (property.type !== 'SpreadProperty') {

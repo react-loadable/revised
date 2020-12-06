@@ -24,7 +24,6 @@ const client = {
 						presets: [
 							['@babel/preset-env', { modules: false }],
 							'@babel/preset-react',
-							'@babel/preset-typescript',
 						],
 						plugins: [
 							'syntax-dynamic-import',
@@ -40,7 +39,7 @@ const client = {
 	devtool: 'source-map',
 	resolve: {
 		alias: {
-			'~react-loadable/revised': path.resolve(__dirname, 'lib'),
+			'~react-loadable/revised': __dirname,
 		},
 	},
 	plugins: [
@@ -85,7 +84,6 @@ const server = {
 						presets: [
 							['@babel/preset-env', { modules: false }],
 							'@babel/preset-react',
-							'@babel/preset-typescript',
 						],
 						plugins: [
 							'syntax-dynamic-import',
@@ -101,7 +99,7 @@ const server = {
 	devtool: 'inline-source-map',
 	resolve: {
 		alias: {
-			'~react-loadable/revised': path.resolve(__dirname, 'lib'),
+			'~react-loadable/revised': __dirname,
 			'~react-loadable/revised/webpack': path.resolve(__dirname, 'webpack'),
 		},
 	},

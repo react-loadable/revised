@@ -1,7 +1,7 @@
 import 'regenerator-runtime'
 import React from 'react'
 import renderer from 'react-test-renderer'
-import Loadable, {LoadableMap, preloadAll, preloadReady} from '../src/index'
+import Loadable, {LoadableMap, preloadAll, preloadReady} from '..'
 
 function waitFor(delay) {
 	return new Promise(resolve => {

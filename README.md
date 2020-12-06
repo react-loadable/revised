@@ -6,16 +6,16 @@ The new package name: `@react-loadable/revised`.
 
 # Background
 
-There are several bugs in the original `react-loadable` package. The author also discontinued it for a long time ago.
+There are several bugs in the original `react-loadable` package. The author abandoned it a long time ago.
 
 This is a revised and actively maintained version of the original `react-loadable` package.
 
 There are several changes in this package compared to the origin.
 
-- Support webpack 5, and also previous versions.
-- Support newer webpack by loading assets from chunk groups, instead of from chunks.
+- Support webpack 4 and webpack 5.
+- Support newer webpack's structure by loading assets from chunk groups, instead of from chunks.
 - Support preload, prefetch assets.
-- Filter hot update assets by default. This can be changed by setting the options.
+- Filter hot update assets by default. This can be changed by the options.
 - Simpler stats file format.
 - Rewritten in Typescript.
 - Converted to ES6 module.
@@ -48,7 +48,8 @@ import React from 'react'
 window.main = async () => {
     try {
       await preloadReady()
-    } catch (e){console.error(e)}
+    } catch (e){
+      console.error(e)
     } finally {
       React.hydrate(<App/>, document.getElementById('#root'))
     }
@@ -58,8 +59,8 @@ window.main = async () => {
 In the server side:
 
 ```javascript
-{assets.filter(url => url.endsWith('.css')).map(url => <link rel="stylesheet" href={url} key={url}/>}
-{assets.filter(url => url.endsWith('.js')).map(url => <script src={url} key={url}/>}
+{assets.filter(url => url.endsWith('.css')).map(url => <link rel="stylesheet" href={url} key={url}/>)}
+{assets.filter(url => url.endsWith('.js')).map(url => <script src={url} key={url}/>)}
 <script>window.main()</script>
 ```
 
