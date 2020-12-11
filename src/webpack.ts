@@ -106,10 +106,10 @@ export class ReactLoadablePlugin {
 			try {
 				const manifest = buildManifest(compilation, this.options.includeHotUpdate, this.options.includeSourceMap)
 				const json = JSON.stringify(manifest, null, 2)
-				compilation.emitAsset(
-					this.options.filename,
-					new RawSource(json)
-				)
+				const source = new RawSource(json)
+				const assetName = this.options.filename
+				if (compilation.getAsset(assetName)) compilation.updateAsset(assetName, source)
+				else compilation.emitAsset(assetName, source)
 			} catch (e) {
 				compilation.errors.push(e)
 			}
