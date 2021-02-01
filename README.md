@@ -46,13 +46,8 @@ import {preloadReady} from '@react-loadable/revised'
 import React from 'react'
 
 window.main = async () => {
-    try {
-      await preloadReady()
-    } catch (e){
-      console.error(e)
-    } finally {
-      React.hydrate(<App/>, document.getElementById('#root'))
-    }
+    await preloadReady()
+    React.hydrate(<App/>, document.getElementById('#root'))
 }
 ```
 

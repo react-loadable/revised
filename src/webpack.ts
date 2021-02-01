@@ -124,7 +124,7 @@ export class ReactLoadablePlugin {
 				compilation.hooks.processAssets.tap(
 					{
 						name: pluginName,
-						stage: Compilation.PROCESS_ASSETS_STAGE_ADDITIONAL,
+						stage: Compilation.PROCESS_ASSETS_STAGE_SUMMARIZE,
 					},
 					() => emit(compilation)
 				)
@@ -156,8 +156,15 @@ export const getBundles = (
 	if (typeof publicPath !== 'string') publicPath = defaultPublicPath || ''
 	const assetFilter = (
 		file: string
-	) => (includeHotUpdate || !/\.hot-update\.js$/.test(file))
-		&& (file.endsWith('.js') || file.endsWith('.css') || (includeSourceMap && file.endsWith('.map')))
+	) => {
+		const fileWithoutQuery = file.split('?')[0]
+		return (includeHotUpdate || !/\.hot-update\.js$/.test(fileWithoutQuery))
+			&& (
+				fileWithoutQuery.endsWith('.js')
+				|| fileWithoutQuery.endsWith('.css')
+				|| (includeSourceMap && fileWithoutQuery.endsWith('.map'))
+			)
+	}
 	if (!entries) entries = ['main']
 	for (const entry of entries)
 		if (!entryToId[entry]) console.warn(`Cannot find chunk group id for entry ${entry}`)
