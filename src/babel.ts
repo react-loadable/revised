@@ -50,6 +50,7 @@ export default ({ types: t, /*template*/ }) => ({
 						}
 					})
 				}
+				if (!dynamicImports.length) continue
 
 				propertiesMap.loader.insertAfter(
 					t.objectProperty(
