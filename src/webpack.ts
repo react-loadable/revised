@@ -211,12 +211,7 @@ export const getBundles = (
 			? values
 			: values.map((asset, index) => [asset, index] as [string, number])
 				.sort(
-					([as1, index1], [as2, index2]) => {
-						const order1 = getOrder(as1)
-						const order2 = getOrder(as2)
-						if (order1 === order2) return index1 - index2
-						return order1 - order2
-					}
+					([as1, index1], [as2, index2]) => getOrder(as1) - getOrder(as2) || index1 - index2
 				)
 				.map(([asset]) => asset)
 	)([...assets.values()])

@@ -1,3 +1,5 @@
+// https://babeljs.io/docs/en/babel-types
+
 export default ({ types: t, /*template*/ }) => ({
 	visitor: {
 		ImportDeclaration(path) {
