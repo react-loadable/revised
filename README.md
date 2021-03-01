@@ -20,11 +20,12 @@ There are several changes in this package compared to the origin.
 - Rewritten in Typescript.
 - Converted to ES6 module.
 - Assets aer sorted in output.
+- Support short hand definition of loadable component definition.
 
 # API changes
 
 Most of APIs are the same as the original `react-loadable`, except the `getBundles` function.
-The new API interface is as follows.
+The new API interface are as follows.
 
 1. `getBundles(stats, modules, options)`
  
@@ -84,3 +85,27 @@ import loadable, {LoadableMap, preloadAll, preloadReady} from '@react-loadable/r
 - Highest order (first elements): javascript assets which belong to at least one of the input entries (specified via the `options` parameter).
 - Lower order (last elements): javascript assets which belong to at least one of the input entries, but are not runtime assets.
 - All other assets' orders are kept unchnaged.
+
+5. Support short hand definition of loadable component definition.
+
+Old: only support this pattern.
+
+```javascript
+import loadable from '@react-loadable/revised'
+
+const LoadableContact = loadable({
+  loader: () => import('./pages/Contact'),
+  loading: Loading
+})
+```
+
+New: support the existing pattern and this new pattern.
+
+```javascript
+import loadable from '@react-loadable/revised'
+
+const LoadableContact = loadable({
+  loader() { return import('./pages/Contact') },
+  loading: Loading
+})
+```

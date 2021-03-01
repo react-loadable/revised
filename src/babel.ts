@@ -2,7 +2,7 @@ export default ({ types: t, /*template*/ }) => ({
 	visitor: {
 		ImportDeclaration(path) {
 			const source = path.node.source.value
-			if (source !== '~react-loadable/revised' && source !== '@react-loadable/revised') return
+			if (source !== '@react-loadable/revised') return
 
 			const defaultSpecifier = path.get('specifiers').find(specifier => specifier.isImportDefaultSpecifier())
 			if (!defaultSpecifier) return
@@ -43,7 +43,13 @@ export default ({ types: t, /*template*/ }) => ({
 						dynamicImports.push(path.parentPath)
 					}
 				})
-				if (!dynamicImports.length) continue
+				if (!dynamicImports.length) {
+					propertiesMap.loader.get('body').traverse({
+						Import(path) {
+							dynamicImports.push(path.parentPath)
+						}
+					})
+				}
 
 				propertiesMap.loader.insertAfter(
 					t.objectProperty(
