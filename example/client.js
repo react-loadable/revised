@@ -1,6 +1,6 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
-import {preloadReady} from '~react-loadable/revised'
+import {preloadReady} from '@react-loadable/revised'
 import App from './components/App'
 
 preloadReady().then(() => {

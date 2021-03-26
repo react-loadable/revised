@@ -1,5 +1,5 @@
 import React from 'react'
-import loadable from '~react-loadable/revised'
+import loadable from '@react-loadable/revised'
 import Loading from './Loading'
 
 const LoadableExample = loadable({

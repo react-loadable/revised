@@ -39,7 +39,7 @@ const client = {
 	devtool: 'source-map',
 	resolve: {
 		alias: {
-			'~react-loadable/revised': __dirname,
+			'@react-loadable/revised': __dirname,
 		},
 	},
 	plugins: [
@@ -99,8 +99,8 @@ const server = {
 	devtool: 'inline-source-map',
 	resolve: {
 		alias: {
-			'~react-loadable/revised': __dirname,
-			'~react-loadable/revised/webpack': path.resolve(__dirname, 'webpack'),
+			'@react-loadable/revised': __dirname,
+			'@react-loadable/revised/webpack': path.resolve(__dirname, 'webpack'),
 		},
 	},
 }
