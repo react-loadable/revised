@@ -120,10 +120,13 @@ const createLoadableComponent = <T, P>(
 			loading: loadState.loading,
 			loaded: loadState.loaded
 		})
-		const firstStateRef = useRef<LoadableState<T> | true>(state)
+		const firstStateRef = useRef<LoadableState<T> | undefined>(state)
+		const mountedRef = useRef<boolean>(false)
+		useEffect(() => {
+		}, [])
 		//must be called asynchronously
 		const setStateWithMountCheck = useCallback((newState: Partial<LoadableState<T>>) => {
-			if (firstStateRef.current) return
+			if (!mountedRef.current) return
 			setState(cur => ({...cur, ...newState}))
 		}, [])
 		const clearTimeouts = useCallback(() => {
@@ -135,8 +138,8 @@ const createLoadableComponent = <T, P>(
 			if (!loadState.loading) return
 			if (typeof delay === 'number') {
 				if (delay === 0) {
-					if (!firstStateRef.current) setState(cur => ({ ...cur, pastDelay: true }))
-					else (firstStateRef.current as LoadableState<T>).pastDelay = true
+					if (mountedRef.current) setState(cur => ({ ...cur, pastDelay: true }))
+					else if (firstStateRef.current) firstStateRef.current.pastDelay = true
 				} else {
 					delayRef.current = setTimeout(() => {
 						setStateWithMountCheck({ pastDelay: true })
@@ -158,14 +161,17 @@ const createLoadableComponent = <T, P>(
 			}
 		}, [report, setStateWithMountCheck, clearTimeouts])
 		const retry = useCallback(async () => {
-			if (firstStateRef.current) return
+			if (!mountedRef.current) return
 			setState(cur => ({ ...cur, error: undefined, loading: true, timedOut: false }))
 			loadState = load(loader)
 			await loadModule()
 		}, [loadModule])
-		useEffect(() => () => {
-			firstStateRef.current = true
-			clearTimeouts()
+		useEffect(() => {
+			mountedRef.current = true
+			return () => {
+				mountedRef.current = false
+				clearTimeouts()
+			}
 		}, [clearTimeouts])
 		if (firstStateRef.current) {
 			firstStateRef.current = undefined
