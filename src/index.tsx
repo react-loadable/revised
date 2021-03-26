@@ -7,6 +7,16 @@ const READY_INITIALIZERS: Array<LoaderType<any>> = []
 const CaptureContext = createContext<((moduleId: string) => any) | undefined>(undefined)
 CaptureContext.displayName = 'Capture'
 
+export function Capture({report, children}: {
+	report(moduleId: string): any
+	children: ReactNode
+}) {
+	return <CaptureContext.Provider value={report}>
+		{children}
+	</CaptureContext.Provider>
+}
+Capture.displayName = 'Capture'
+
 export type LoadableOptions<T, P> = {
 	loading: ComponentType<{
 		isLoading: boolean

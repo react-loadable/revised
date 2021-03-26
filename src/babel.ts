@@ -6,7 +6,7 @@ export default ({ types: t, /*template*/ }) => ({
 	visitor: {
 		ImportDeclaration(path) {
 			const source = path.node.source.value
-			if (source !== '@react-loadable/revised') return
+			if (source !== '@react-loadable/revised' && source !== '~react-loadable/revised') return
 
 			const defaultSpecifier = path.get('specifiers').find(specifier => specifier.isImportDefaultSpecifier())
 			if (!defaultSpecifier) return
@@ -38,9 +38,9 @@ export default ({ types: t, /*template*/ }) => ({
 				const loaderValue = loader.get('value')
 				const dynamicImports = []
 
-				const body = loaderValue.isArrowFunctionExpression()
-					? loaderValue.get('value').get('body')
-					: loaderValue.isFunctionExpression() && loaderValue.get('body')
+				const body = loader.isFunction()
+					? loader.get('body')
+					: loaderValue.isArrowFunctionExpression() && loaderValue.get('body')
 				if (!body) throw new Error('react-loadable: loader must be function shorthand expression or arrow function expression')
 
 				body.traverse({
