@@ -1,4 +1,14 @@
-import {ComponentType, createContext, ReactNode, useCallback, useContext, useEffect, useRef, useState} from 'react'
+import {
+	ComponentType,
+	createContext,
+	ReactElement,
+	ReactNode,
+	useCallback,
+	useContext,
+	useEffect,
+	useRef,
+	useState
+} from 'react'
 
 type LoaderType<T> = () => Promise<T>
 
@@ -27,7 +37,7 @@ export type LoadableOptions<T, P> = {
 	}>
 	delay?: number
 	timeout?: number
-	render?(loaded: T, props: P): ReactNode
+	render?(loaded: T, props: P): ReactElement
 	loader(): Promise<T>
 	webpack?(): string[]
 }
@@ -94,7 +104,7 @@ const createLoadableComponent = <T, P>(
 		timeout,
 		...opts
 	}: LoadableOptions<T, P>
-) => {
+): ComponentType<P> => {
 	if (!Loading) throw new Error('react-loadable requires a `loading` component')
 
 	let loadState: LoadState<T>
