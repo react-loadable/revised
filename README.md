@@ -21,6 +21,7 @@ There are several changes in this package compared to the origin.
 - Converted to ES6 module.
 - Assets aer sorted in output.
 - Support short hand definition of loadable component definition.
+- Remove `LoadableMap`.
 
 # API changes
 
@@ -76,10 +77,10 @@ const loadable = require('react-loadable')
 New:
 
 ```javascript
-import loadable, {LoadableMap, preloadAll, preloadReady} from '@react-loadable/revised'
+import loadable, {preloadAll, preloadReady} from '@react-loadable/revised'
 ```
 
-3. `Map` is renamed to `LoadableMap` to avoid conflicting with the ES6 Map.
+3. `LoadableMap` was removed.
 
 4. (Advanced) The output assets are returned in the following orders unless the `preserveEntriesOrder` option is set.
 - Highest order (first elements): javascript assets which belong to at least one of the input entries (specified via the `options` parameter).

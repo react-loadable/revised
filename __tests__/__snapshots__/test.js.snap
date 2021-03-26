@@ -28,54 +28,6 @@ exports[`LoadableComponent delay and timeout 4`] = `
 </div>
 `;
 
-exports[`LoadableComponent loadable map error 1`] = `
-<div>
-  MyLoadingComponent 
-  {"isLoading":true,"pastDelay":false,"timedOut":false}
-</div>
-`;
-
-exports[`LoadableComponent loadable map error 2`] = `
-<div>
-  MyLoadingComponent 
-  {"isLoading":true,"pastDelay":true,"timedOut":false}
-</div>
-`;
-
-exports[`LoadableComponent loadable map error 3`] = `
-<div>
-  MyLoadingComponent 
-  {"isLoading":false,"pastDelay":true,"timedOut":false,"error":{}}
-</div>
-`;
-
-exports[`LoadableComponent loadable map success 1`] = `
-<div>
-  MyLoadingComponent 
-  {"isLoading":true,"pastDelay":false,"timedOut":false}
-</div>
-`;
-
-exports[`LoadableComponent loadable map success 2`] = `
-<div>
-  MyLoadingComponent 
-  {"isLoading":true,"pastDelay":true,"timedOut":false}
-</div>
-`;
-
-exports[`LoadableComponent loadable map success 3`] = `
-<div>
-  <div>
-    MyComponent 
-    {"prop":"baz"}
-  </div>
-  <div>
-    MyComponent 
-    {"prop":"baz"}
-  </div>
-</div>
-`;
-
 exports[`LoadableComponent loading error 1`] = `
 <div>
   MyLoadingComponent 
