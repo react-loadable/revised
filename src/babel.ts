@@ -1,4 +1,6 @@
 // https://babeljs.io/docs/en/babel-types
+// https://doc.esdoc.org/github.com/mason-lang/esast/class/src/ast.js~Property.html
+// https://astexplorer.net/
 
 export default ({ types: t, /*template*/ }) => ({
 	visitor: {
