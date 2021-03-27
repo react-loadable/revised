@@ -1,4 +1,5 @@
 import {
+	ComponentProps,
 	ComponentType,
 	createContext,
 	ReactElement,
@@ -10,10 +11,10 @@ import {
 	useState
 } from 'react'
 
-type LoaderType<T> = () => Promise<T>
+type LoaderType<T, P, Options extends LoadableOptions<T, P>> = () => Promise<LoadableComponent<T, P, Options>>
 
-const ALL_INITIALIZERS: Array<LoaderType<any>> = []
-const READY_INITIALIZERS: Array<LoaderType<any>> = []
+const ALL_INITIALIZERS: Array<LoaderType<any, any, any>> = []
+const READY_INITIALIZERS: Array<LoaderType<any, any, any>> = []
 const CaptureContext = createContext<((moduleId: string) => any) | undefined>(undefined)
 CaptureContext.displayName = 'Capture'
 
@@ -27,7 +28,7 @@ export function Capture({report, children}: {
 }
 Capture.displayName = 'Capture'
 
-export type LoadableOptions<T, P> = {
+type LoadableOptions<T, P> = {
 	loading: ComponentType<{
 		isLoading: boolean
 		pastDelay: boolean
@@ -37,28 +38,35 @@ export type LoadableOptions<T, P> = {
 	}>
 	delay?: number
 	timeout?: number
-	render?(loaded: T, props: P): ReactElement
-	loader(): Promise<T>
 	webpack?(): string[]
-}
+} & ({
+	loader(): Promise<T>
+} | {
+	loader(): T extends {default: ComponentType<infer Props>} ? Promise<ComponentType<Props>> : never
+	render(loaded: T, props: P): ReactElement
+})
+
+type LoadableComponent<T, P, Options extends LoadableOptions<T, P>,> = 'render' extends keyof Options
+	? T extends {default: ComponentType<infer Props>} ? ComponentType<Props> : never
+	: ComponentType<P>
 
 declare const __webpack_modules__: any
 const isWebpackReady = (getModuleIds: () => string[]) => typeof __webpack_modules__ === 'object'
 	&& getModuleIds().every(moduleId => typeof moduleId !== 'undefined' && typeof __webpack_modules__[moduleId] !== 'undefined')
 
-interface LoadState<T> {
-	promise: Promise<T>
+interface LoadState<T, P, Options extends LoadableOptions<T, P>> {
+	promise: Promise<LoadableComponent<T, P, Options>>
 	loading: boolean
-	loaded?: T
+	loaded?: LoadableComponent<T, P, Options>
 	error?: Error
 }
-const load = <T,>(loader: LoaderType<T>) => {
+const load = <T, P, Options extends LoadableOptions<T, P>>(loader: LoaderType<T, P, Options>) => {
 	const state = {
 		loading: true,
 		loaded: undefined,
 		error: undefined,
-	} as LoadState<T>
-	state.promise = new Promise<T>(async (resolve, reject) => {
+	} as LoadState<T, P, Options>
+	state.promise = new Promise<LoadableComponent<T, P, Options>>(async (resolve, reject) => {
 		try {
 			const loaded = await loader()
 			state.loading = false
@@ -74,42 +82,46 @@ const load = <T,>(loader: LoaderType<T>) => {
 }
 
 type LoadComponent<P> = {
-	__esModule: true
+	// __esModule: true
 	default: ComponentType<P>
 } | ComponentType<P>
 
 const resolve = <P,>(obj: LoadComponent<P>): ComponentType<P> => (obj as any)?.__esModule ? (obj as any).default : obj
-const defaultRenderer = <T, P>(
+const defaultRenderer = <P, T extends {default: ComponentType<P>}>(
 	loaded: T,
-	props: P
+	props: T extends {default: ComponentType<infer P>} ? P : never
 ) => {
-	const Loaded = resolve(loaded as unknown as LoadComponent<P>,)
+	const Loaded = resolve(loaded)
 	return <Loaded {...props}/>
 }
-// (loaded: T, props: P): ReactNode
-type LoadableState<T> = {
+
+type LoadableState<T, P, Options extends LoadableOptions<T, P>,> = {
 	error?: Error
 	pastDelay: boolean
 	timedOut: boolean
 	loading: boolean
-	loaded?: T
+	loaded?: LoadableComponent<T, P, Options>
 }
-const createLoadableComponent = <T, P>(
+
+function createLoadableComponent<T, P, Options extends LoadableOptions<T, P>>(
 	{
-		render = defaultRenderer,
 		delay = 200,
 		loading: Loading,
 		loader,
 		webpack,
 		timeout,
 		...opts
-	}: LoadableOptions<T, P>
-): ComponentType<P> => {
+	}: Options
+): LoadableComponent<T, P, Options> | {
+	displayName: string
+	preload: LoaderType<T, P, Options>
+} {
 	if (!Loading) throw new Error('react-loadable requires a `loading` component')
+	const render = 'render' in opts ? opts['render'] : defaultRenderer
 
-	let loadState: LoadState<T>
+	let loadState: LoadState<T, P, Options>
 	const init = () => {
-		if (!loadState) loadState = load(loader)
+		if (!loadState) loadState = load(loader as any)
 		return loadState.promise
 	}
 	ALL_INITIALIZERS.push(init)
@@ -118,24 +130,24 @@ const createLoadableComponent = <T, P>(
 		if (isWebpackReady(webpack)) return init()
 	})
 
-	const LoadableComponent = (props: P) => {
+	const LoadableComponent = (props: ComponentProps<LoadableComponent<T, P, Options>>) => {
 		const report = useContext(CaptureContext)
 		const delayRef = useRef<ReturnType<typeof setTimeout>>()
 		const timeoutRef = useRef<ReturnType<typeof setTimeout>>()
 		init()
-		const [state, setState] = useState<LoadableState<T>>({
+		const [state, setState] = useState<LoadableState<T, P, Options>>({
 			error: loadState.error,
 			pastDelay: false,
 			timedOut: false,
 			loading: loadState.loading,
 			loaded: loadState.loaded
 		})
-		const firstStateRef = useRef<LoadableState<T> | undefined>(state)
+		const firstStateRef = useRef<LoadableState<T, P, Options> | undefined>(state)
 		const mountedRef = useRef<boolean>(false)
 		useEffect(() => {
 		}, [])
 		//must be called asynchronously
-		const setStateWithMountCheck = useCallback((newState: Partial<LoadableState<T>>) => {
+		const setStateWithMountCheck = useCallback((newState: Partial<LoadableState<T, P, Options>>) => {
 			if (!mountedRef.current) return
 			setState(cur => ({...cur, ...newState}))
 		}, [])
@@ -173,7 +185,7 @@ const createLoadableComponent = <T, P>(
 		const retry = useCallback(async () => {
 			if (!mountedRef.current) return
 			setState(cur => ({ ...cur, error: undefined, loading: true, timedOut: false }))
-			loadState = load(loader)
+			loadState = load(loader as any)
 			await loadModule()
 		}, [loadModule])
 		useEffect(() => {
@@ -205,7 +217,7 @@ const createLoadableComponent = <T, P>(
 	return LoadableComponent
 }
 
-const flushInitializers = async <T,>(initializers: Array<LoaderType<T>>): Promise<void> => {
+const flushInitializers = async <T, P, Options extends LoadableOptions<T, P>>(initializers: Array<LoaderType<T, P, Options>>): Promise<void> => {
 	const promises = []
 	while (initializers.length) promises.push(initializers.pop()!())
 	await Promise.all(promises)
