@@ -45,7 +45,7 @@ type LoadableOptions<T, P> = {
 type LoadableComponent<T, P> = ComponentType<
 	T extends {default: ComponentType<infer Props>}
 		? Props
-		: T // this conditional branch is not 100% correct. It should be never if render property is not provided
+		: P // this conditional branch is not 100% correct. It should be never if render property is not provided
 	>
 
 declare const __webpack_modules__: any
