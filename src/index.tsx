@@ -10,10 +10,10 @@ import {
 	useState
 } from 'react'
 
-type LoaderType<T, P, Options extends LoadableOptions<T, P>> = () => Promise<LoadableComponent<T, P, Options>>
+type LoaderType<T, P> = () => Promise<LoadableComponent<T, P>>
 
-const ALL_INITIALIZERS: Array<LoaderType<any, any, any>> = []
-const READY_INITIALIZERS: Array<LoaderType<any, any, any>> = []
+const ALL_INITIALIZERS: Array<LoaderType<any, any>> = []
+const READY_INITIALIZERS: Array<LoaderType<any, any>> = []
 const CaptureContext = createContext<((moduleId: string) => any) | undefined>(undefined)
 CaptureContext.displayName = 'Capture'
 
@@ -27,7 +27,7 @@ export function Capture({report, children}: {
 }
 Capture.displayName = 'Capture'
 
-type LoadableOptionsCommon = {
+type LoadableOptions<T, P> = {
 	loading: ComponentType<{
 		isLoading: boolean
 		pastDelay: boolean
@@ -38,35 +38,35 @@ type LoadableOptionsCommon = {
 	delay?: number
 	timeout?: number
 	webpack?(): string[]
+	loader(): T extends {default: ComponentType<infer Props>}
+		? Promise<ComponentType<Props>>
+		: Promise<T> // this conditional branch is not 100% correct. It should be never if render property is not provided
+	render?(loaded: T, props: P): ReactElement
 }
-type LoadableOptions<T, P> = (LoadableOptionsCommon & {
-	loader(): Promise<T>
-}) | (LoadableOptionsCommon & {
-	loader(): T extends {default: ComponentType<infer Props>} ? Promise<ComponentType<Props>> : never
-	render(loaded: T, props: P): ReactElement
-})
 
-type LoadableComponent<T, P, Options extends LoadableOptions<T, P>,> = 'render' extends keyof Options
-	? ComponentType<P>
-	: T extends {default: ComponentType<infer Props>} ? ComponentType<Props> : never
+type LoadableComponent<T, P> = ComponentType<
+	T extends {default: ComponentType<infer Props>}
+		? Props
+		: T // this conditional branch is not 100% correct. It should be never if render property is not provided
+	>
 
 declare const __webpack_modules__: any
 const isWebpackReady = (getModuleIds: () => string[]) => typeof __webpack_modules__ === 'object'
 	&& getModuleIds().every(moduleId => typeof moduleId !== 'undefined' && typeof __webpack_modules__[moduleId] !== 'undefined')
 
-interface LoadState<T, P, Options extends LoadableOptions<T, P>> {
-	promise: Promise<LoadableComponent<T, P, Options>>
+interface LoadState<T, P> {
+	promise: Promise<LoadableComponent<T, P>>
 	loading: boolean
-	loaded?: LoadableComponent<T, P, Options>
+	loaded?: LoadableComponent<T, P>
 	error?: Error
 }
-const load = <T, P, Options extends LoadableOptions<T, P>>(loader: LoaderType<T, P, Options>) => {
+const load = <T, P>(loader: LoaderType<T, P>) => {
 	const state = {
 		loading: true,
 		loaded: undefined,
 		error: undefined,
-	} as LoadState<T, P, Options>
-	state.promise = new Promise<LoadableComponent<T, P, Options>>(async (resolve, reject) => {
+	} as LoadState<T, P>
+	state.promise = new Promise<LoadableComponent<T, P>>(async (resolve, reject) => {
 		try {
 			const loaded = await loader()
 			state.loading = false
@@ -95,15 +95,15 @@ const defaultRenderer = <P, T extends {default: ComponentType<P>}>(
 	return <Loaded {...props}/>
 }
 
-type LoadableState<T, P, Options extends LoadableOptions<T, P>,> = {
+type LoadableState<T, P,> = {
 	error?: Error
 	pastDelay: boolean
 	timedOut: boolean
 	loading: boolean
-	loaded?: LoadableComponent<T, P, Options>
+	loaded?: LoadableComponent<T, P>
 }
 
-function createLoadableComponent<T, P, Options extends LoadableOptions<T, P>>(
+function createLoadableComponent<T, P>(
 	{
 		delay = 200,
 		loading: Loading,
@@ -111,15 +111,15 @@ function createLoadableComponent<T, P, Options extends LoadableOptions<T, P>>(
 		webpack,
 		timeout,
 		...opts
-	}: Options
-): LoadableComponent<T, P, Options> & {
+	}: LoadableOptions<T, P>
+): LoadableComponent<T, P> & {
 	displayName: string
-	preload: LoaderType<T, P, Options>
+	preload: LoaderType<T, P>
 } {
 	if (!Loading) throw new Error('react-loadable requires a `loading` component')
 	const render = 'render' in opts ? opts['render'] : defaultRenderer
 
-	let loadState: LoadState<T, P, Options>
+	let loadState: LoadState<T, P>
 	const init = () => {
 		if (!loadState) loadState = load(loader as any)
 		return loadState.promise
@@ -135,19 +135,19 @@ function createLoadableComponent<T, P, Options extends LoadableOptions<T, P>>(
 		const delayRef = useRef<ReturnType<typeof setTimeout>>()
 		const timeoutRef = useRef<ReturnType<typeof setTimeout>>()
 		init()
-		const [state, setState] = useState<LoadableState<T, P, Options>>({
+		const [state, setState] = useState<LoadableState<T, P>>({
 			error: loadState.error,
 			pastDelay: false,
 			timedOut: false,
 			loading: loadState.loading,
 			loaded: loadState.loaded
 		})
-		const firstStateRef = useRef<LoadableState<T, P, Options> | undefined>(state)
+		const firstStateRef = useRef<LoadableState<T, P> | undefined>(state)
 		const mountedRef = useRef<boolean>(false)
 		useEffect(() => {
 		}, [])
 		//must be called asynchronously
-		const setStateWithMountCheck = useCallback((newState: Partial<LoadableState<T, P, Options>>) => {
+		const setStateWithMountCheck = useCallback((newState: Partial<LoadableState<T, P>>) => {
 			if (!mountedRef.current) return
 			setState(cur => ({...cur, ...newState}))
 		}, [])
@@ -223,7 +223,7 @@ function createLoadableComponent<T, P, Options extends LoadableOptions<T, P>>(
 	return LoadableComponent as any
 }
 
-const flushInitializers = async <T, P, Options extends LoadableOptions<T, P>>(initializers: Array<LoaderType<T, P, Options>>): Promise<void> => {
+const flushInitializers = async <T, P>(initializers: Array<LoaderType<T, P>>): Promise<void> => {
 	const promises = []
 	while (initializers.length) promises.push(initializers.pop()!())
 	await Promise.all(promises)
