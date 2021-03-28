@@ -1,4 +1,5 @@
 import {
+	ComponentProps,
 	ComponentType,
 	createContext,
 	ReactElement,
@@ -11,9 +12,10 @@ import {
 } from 'react'
 
 type LoaderType<T, P> = () => Promise<LoadableComponent<T, P>>
+type LoaderTypeOptional<T, P> = () => Promise<LoadableComponent<T, P>> | undefined
 
 const ALL_INITIALIZERS: Array<LoaderType<any, any>> = []
-const READY_INITIALIZERS: Array<LoaderType<any, any>> = []
+const READY_INITIALIZERS: Array<LoaderTypeOptional<any, any>> = []
 const CaptureContext = createContext<((moduleId: string) => any) | undefined>(undefined)
 CaptureContext.displayName = 'Capture'
 
@@ -128,7 +130,7 @@ function createLoadableComponent<T, P>(
 		if (isWebpackReady(webpack)) return init()
 	})
 
-	const LoadableComponent = props => {
+	const LoadableComponent = (props: ComponentProps<LoadableComponent<T, P>>) => {
 		const report = useContext(CaptureContext)
 		const delayRef = useRef<ReturnType<typeof setTimeout>>()
 		const timeoutRef = useRef<ReturnType<typeof setTimeout>>()
@@ -212,7 +214,7 @@ function createLoadableComponent<T, P>(
 				retry={retry}
 			/>
 			: state.loaded || null
-				? render(state.loaded as any, props)
+				? render(state.loaded as any, props as any)
 				: null
 	}
 
@@ -221,7 +223,7 @@ function createLoadableComponent<T, P>(
 	return LoadableComponent as any
 }
 
-const flushInitializers = async <T, P>(initializers: Array<LoaderType<T, P>>): Promise<void> => {
+const flushInitializers = async <T, P>(initializers: Array<LoaderType<T, P> | LoaderTypeOptional<T, P>>): Promise<void> => {
 	const promises = []
 	while (initializers.length) promises.push(initializers.pop()!())
 	await Promise.all(promises)
