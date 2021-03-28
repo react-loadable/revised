@@ -1,5 +1,4 @@
 import {
-	ComponentProps,
 	ComponentType,
 	createContext,
 	ReactElement,
@@ -28,7 +27,7 @@ export function Capture({report, children}: {
 }
 Capture.displayName = 'Capture'
 
-type LoadableOptions<T, P> = {
+type LoadableOptionsCommon = {
 	loading: ComponentType<{
 		isLoading: boolean
 		pastDelay: boolean
@@ -39,16 +38,17 @@ type LoadableOptions<T, P> = {
 	delay?: number
 	timeout?: number
 	webpack?(): string[]
-} & ({
+}
+type LoadableOptions<T, P> = (LoadableOptionsCommon & {
 	loader(): Promise<T>
-} | {
+}) | (LoadableOptionsCommon & {
 	loader(): T extends {default: ComponentType<infer Props>} ? Promise<ComponentType<Props>> : never
 	render(loaded: T, props: P): ReactElement
 })
 
 type LoadableComponent<T, P, Options extends LoadableOptions<T, P>,> = 'render' extends keyof Options
-	? T extends {default: ComponentType<infer Props>} ? ComponentType<Props> : never
-	: ComponentType<P>
+	? ComponentType<P>
+	: T extends {default: ComponentType<infer Props>} ? ComponentType<Props> : never
 
 declare const __webpack_modules__: any
 const isWebpackReady = (getModuleIds: () => string[]) => typeof __webpack_modules__ === 'object'
@@ -130,7 +130,7 @@ function createLoadableComponent<T, P, Options extends LoadableOptions<T, P>>(
 		if (isWebpackReady(webpack)) return init()
 	})
 
-	const LoadableComponent = (props: ComponentProps<LoadableComponent<T, P, Options>>) => {
+	const LoadableComponent = props => {
 		const report = useContext(CaptureContext)
 		const delayRef = useRef<ReturnType<typeof setTimeout>>()
 		const timeoutRef = useRef<ReturnType<typeof setTimeout>>()
@@ -152,8 +152,14 @@ function createLoadableComponent<T, P, Options extends LoadableOptions<T, P>>(
 			setState(cur => ({...cur, ...newState}))
 		}, [])
 		const clearTimeouts = useCallback(() => {
-			clearTimeout(delayRef.current)
-			clearTimeout(timeoutRef.current)
+			if (delayRef.current) {
+				clearTimeout(delayRef.current)
+				delayRef.current = undefined
+			}
+			if (timeoutRef.current) {
+				clearTimeout(timeoutRef.current)
+				timeoutRef.current = undefined
+			}
 		}, [])
 		const loadModule = useCallback(async () => {
 			if (report && Array.isArray(opts['modules'])) for (const moduleName of opts['modules']) report(moduleName)
@@ -208,13 +214,13 @@ function createLoadableComponent<T, P, Options extends LoadableOptions<T, P>>(
 				retry={retry}
 			/>
 			: state.loaded || null
-				? render(state.loaded, props)
+				? render(state.loaded as any, props)
 				: null
 	}
 
 	LoadableComponent.preload = init
 	LoadableComponent.displayName = `LoadableComponent(${Array.isArray(opts['modules']) ? opts['modules'].join('-') : ''})`
-	return LoadableComponent
+	return LoadableComponent as any
 }
 
 const flushInitializers = async <T, P, Options extends LoadableOptions<T, P>>(initializers: Array<LoaderType<T, P, Options>>): Promise<void> => {
@@ -225,4 +231,6 @@ const flushInitializers = async <T, P, Options extends LoadableOptions<T, P>>(in
 }
 export const preloadAll = () => flushInitializers(ALL_INITIALIZERS)
 export const preloadReady = () => flushInitializers(READY_INITIALIZERS)
-export default <T, P>(opts: LoadableOptions<T, P>) => createLoadableComponent(opts)
+
+const loadable = <T, P>(opts: LoadableOptions<T, P>) => createLoadableComponent(opts)
+export default loadable
