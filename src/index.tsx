@@ -38,9 +38,7 @@ type LoadableOptions<T, P> = {
 	delay?: number
 	timeout?: number
 	webpack?(): string[]
-	loader(): T extends {default: ComponentType<infer Props>}
-		? Promise<ComponentType<Props>>
-		: Promise<T> // this conditional branch is not 100% correct. It should be never if render property is not provided
+	loader(): Promise<T>
 	render?(loaded: T, props: P): ReactElement
 }
 
