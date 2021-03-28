@@ -112,7 +112,7 @@ function createLoadableComponent<T, P, Options extends LoadableOptions<T, P>>(
 		timeout,
 		...opts
 	}: Options
-): LoadableComponent<T, P, Options> | {
+): LoadableComponent<T, P, Options> & {
 	displayName: string
 	preload: LoaderType<T, P, Options>
 } {
