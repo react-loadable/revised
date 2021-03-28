@@ -108,6 +108,7 @@ function createLoadableComponent<T, P>(
 		loader,
 		webpack,
 		timeout,
+		render = defaultRenderer as (loaded: T, props: P) => ReactElement,
 		...opts
 	}: LoadableOptions<T, P>
 ): LoadableComponent<T, P> & {
@@ -115,7 +116,6 @@ function createLoadableComponent<T, P>(
 	preload: LoaderType<T, P>
 } {
 	if (!Loading) throw new Error('react-loadable requires a `loading` component')
-	const render = 'render' in opts ? opts['render'] : defaultRenderer
 
 	let loadState: LoadState<T, P>
 	const init = () => {
