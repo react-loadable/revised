@@ -202,8 +202,8 @@ function createLoadableComponent<T, P>(
 			}
 		}, [clearTimeouts])
 		if (firstStateRef.current) {
-			firstStateRef.current = undefined
 			loadModule()
+			firstStateRef.current = undefined
 		}
 		return state.loading || state.error
 			? <Loading
