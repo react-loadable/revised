@@ -147,6 +147,7 @@ function createLoadableComponent<T, P>(
 			if (report && Array.isArray(opts['modules'])) for (const moduleName of opts['modules']) report(moduleName)
 			if (loadState.error || loadState.loaded) return
 			if (typeof timeout === 'number') {
+				clearTimeouts()
 				timedOutRef.current = setTimeout(() => {
 					setStateWithMountCheck({timedOut: true})
 				}, timeout)
