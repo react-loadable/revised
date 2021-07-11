@@ -1,65 +1,37 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`LoadableComponent delay and timeout 1`] = `
-<div>
-  MyLoadingComponent 
-  {"isLoading":true,"pastDelay":false,"timedOut":false}
-</div>
-`;
-
-exports[`LoadableComponent delay and timeout 2`] = `
-<div>
-  MyLoadingComponent 
-  {"isLoading":true,"pastDelay":true,"timedOut":false}
-</div>
-`;
-
-exports[`LoadableComponent delay and timeout 3`] = `
-<div>
-  MyLoadingComponent 
-  {"isLoading":true,"pastDelay":true,"timedOut":true}
-</div>
-`;
-
-exports[`LoadableComponent delay and timeout 4`] = `
-<div>
-  MyComponent 
-  {"prop":"foo"}
-</div>
-`;
-
 exports[`LoadableComponent loading error 1`] = `
 <div>
   MyLoadingComponent 
-  {"isLoading":true,"pastDelay":false,"timedOut":false}
+  {"timedOut":false}
 </div>
 `;
 
 exports[`LoadableComponent loading error 2`] = `
 <div>
   MyLoadingComponent 
-  {"isLoading":true,"pastDelay":true,"timedOut":false}
+  {"timedOut":false}
 </div>
 `;
 
 exports[`LoadableComponent loading error 3`] = `
 <div>
   MyLoadingComponent 
-  {"isLoading":false,"pastDelay":true,"timedOut":false,"error":{}}
+  {"timedOut":false,"error":{}}
 </div>
 `;
 
 exports[`LoadableComponent loading success 1`] = `
 <div>
   MyLoadingComponent 
-  {"isLoading":true,"pastDelay":false,"timedOut":false}
+  {"timedOut":false}
 </div>
 `;
 
 exports[`LoadableComponent loading success 2`] = `
 <div>
   MyLoadingComponent 
-  {"isLoading":true,"pastDelay":true,"timedOut":false}
+  {"timedOut":false}
 </div>
 `;
 
@@ -80,7 +52,7 @@ exports[`LoadableComponent loading success 4`] = `
 exports[`LoadableComponent preload 1`] = `
 <div>
   MyLoadingComponent 
-  {"isLoading":true,"pastDelay":false,"timedOut":false}
+  {"timedOut":false}
 </div>
 `;
 
@@ -98,13 +70,6 @@ exports[`LoadableComponent preload 3`] = `
 </div>
 `;
 
-exports[`LoadableComponent preloadReady delay with 0 1`] = `
-<div>
-  MyLoadingComponent 
-  {"isLoading":true,"pastDelay":true,"timedOut":false}
-</div>
-`;
-
 exports[`LoadableComponent preloadReady many 1`] = `
 <div>
   MyComponent 
@@ -115,7 +80,7 @@ exports[`LoadableComponent preloadReady many 1`] = `
 exports[`LoadableComponent preloadReady missing 1`] = `
 <div>
   MyLoadingComponent 
-  {"isLoading":true,"pastDelay":false,"timedOut":false}
+  {"timedOut":false}
 </div>
 `;
 
@@ -129,21 +94,21 @@ exports[`LoadableComponent preloadReady one 1`] = `
 exports[`LoadableComponent preloadReady undefined 1`] = `
 <div>
   MyLoadingComponent 
-  {"isLoading":true,"pastDelay":false,"timedOut":false}
+  {"timedOut":false}
 </div>
 `;
 
 exports[`LoadableComponent render 1`] = `
 <div>
   MyLoadingComponent 
-  {"isLoading":true,"pastDelay":false,"timedOut":false}
+  {"timedOut":false}
 </div>
 `;
 
 exports[`LoadableComponent render 2`] = `
 <div>
   MyLoadingComponent 
-  {"isLoading":true,"pastDelay":true,"timedOut":false}
+  {"timedOut":false}
 </div>
 `;
 
@@ -163,5 +128,33 @@ exports[`LoadableComponent server side rendering 1`] = `
 exports[`LoadableComponent server side rendering es6 1`] = `
 <div>
   fixture2
+</div>
+`;
+
+exports[`LoadableComponent timeout 1`] = `
+<div>
+  MyLoadingComponent 
+  {"timedOut":false}
+</div>
+`;
+
+exports[`LoadableComponent timeout 2`] = `
+<div>
+  MyLoadingComponent 
+  {"timedOut":false}
+</div>
+`;
+
+exports[`LoadableComponent timeout 3`] = `
+<div>
+  MyLoadingComponent 
+  {"timedOut":true}
+</div>
+`;
+
+exports[`LoadableComponent timeout 4`] = `
+<div>
+  MyComponent 
+  {"prop":"foo"}
 </div>
 `;

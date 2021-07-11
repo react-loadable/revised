@@ -55,11 +55,10 @@ describe('LoadableComponent', () => {
 		expect(component2.toJSON()).toMatchSnapshot() // reload
 	})
 
-	test('delay and timeout', async () => {
+	test('timeout', async () => {
 		let LoadableMyComponent = Loadable({
 			loader: createLoader(300, () => MyComponent),
 			loading: MyLoadingComponent,
-			delay: 100,
 			timeout: 200,
 		})
 
@@ -218,19 +217,5 @@ describe('LoadableComponent', () => {
 			await renderer.act(() => waitFor(200))
 		})
 
-		test('delay with 0', async () => {
-			let LoadableMyComponent = Loadable({
-				loader: createLoader(300, () => MyComponent),
-				loading: MyLoadingComponent,
-				delay: 0,
-				timeout: 200,
-			})
-
-			let loadingComponent = renderer.create(<LoadableMyComponent prop="foo" />)
-
-			expect(loadingComponent.toJSON()).toMatchSnapshot() // loading
-
-			await renderer.act(() => waitFor(300))
-		})
 	})
 })
