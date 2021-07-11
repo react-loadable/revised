@@ -87,7 +87,7 @@ import loadable, {preloadAll, preloadReady} from '@react-loadable/revised'
 - Lower order (last elements): javascript assets which belong to at least one of the input entries, but are not runtime assets.
 - All other assets' orders are kept unchnaged.
 
-5. Support short hand definition of loadable component definition.
+5. Support short-hand definition of loadable component definition.
 
 Old: only support this pattern.
 
@@ -110,3 +110,13 @@ const LoadableContact = loadable({
   loading: Loading
 })
 ```
+
+6. Simplify the `Loading` component.
+
+New: the `Loading` component should accept only 3 props:
+- `timedOut: boolean`
+- `error?: Error`
+- `retry(): any`
+
+Rational: showing the loading state after a delay can be done trivially within the Loading component's implementation.
+While this reduces a lot of burden for maintaining the source code of this project.
