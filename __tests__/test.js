@@ -55,24 +55,6 @@ describe('LoadableComponent', () => {
 		expect(component2.toJSON()).toMatchSnapshot() // reload
 	})
 
-	test('timeout', async () => {
-		let LoadableMyComponent = Loadable({
-			loader: createLoader(300, () => MyComponent),
-			loading: MyLoadingComponent,
-			timeout: 200,
-		})
-
-		let component1 = renderer.create(<LoadableMyComponent prop="foo" />)
-
-		expect(component1.toJSON()).toMatchSnapshot() // initial
-		await renderer.act(() => waitFor(100))
-		expect(component1.toJSON()).toMatchSnapshot() // loading
-		await renderer.act(() => waitFor(100))
-		expect(component1.toJSON()).toMatchSnapshot() // timed out
-		await renderer.act(() => waitFor(100))
-		expect(component1.toJSON()).toMatchSnapshot() // loaded
-	})
-
 	test('loading error', async () => {
 		let LoadableMyComponent = Loadable({
 			loader: createLoader(400, null, new Error('test error')),

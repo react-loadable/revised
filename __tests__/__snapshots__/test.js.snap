@@ -3,35 +3,35 @@
 exports[`LoadableComponent loading error 1`] = `
 <div>
   MyLoadingComponent 
-  {"timedOut":false}
+  {}
 </div>
 `;
 
 exports[`LoadableComponent loading error 2`] = `
 <div>
   MyLoadingComponent 
-  {"timedOut":false}
+  {}
 </div>
 `;
 
 exports[`LoadableComponent loading error 3`] = `
 <div>
   MyLoadingComponent 
-  {"timedOut":false,"error":{}}
+  {"error":{}}
 </div>
 `;
 
 exports[`LoadableComponent loading success 1`] = `
 <div>
   MyLoadingComponent 
-  {"timedOut":false}
+  {}
 </div>
 `;
 
 exports[`LoadableComponent loading success 2`] = `
 <div>
   MyLoadingComponent 
-  {"timedOut":false}
+  {}
 </div>
 `;
 
@@ -52,7 +52,7 @@ exports[`LoadableComponent loading success 4`] = `
 exports[`LoadableComponent preload 1`] = `
 <div>
   MyLoadingComponent 
-  {"timedOut":false}
+  {}
 </div>
 `;
 
@@ -80,7 +80,7 @@ exports[`LoadableComponent preloadReady many 1`] = `
 exports[`LoadableComponent preloadReady missing 1`] = `
 <div>
   MyLoadingComponent 
-  {"timedOut":false}
+  {}
 </div>
 `;
 
@@ -94,21 +94,21 @@ exports[`LoadableComponent preloadReady one 1`] = `
 exports[`LoadableComponent preloadReady undefined 1`] = `
 <div>
   MyLoadingComponent 
-  {"timedOut":false}
+  {}
 </div>
 `;
 
 exports[`LoadableComponent render 1`] = `
 <div>
   MyLoadingComponent 
-  {"timedOut":false}
+  {}
 </div>
 `;
 
 exports[`LoadableComponent render 2`] = `
 <div>
   MyLoadingComponent 
-  {"timedOut":false}
+  {}
 </div>
 `;
 
@@ -128,33 +128,5 @@ exports[`LoadableComponent server side rendering 1`] = `
 exports[`LoadableComponent server side rendering es6 1`] = `
 <div>
   fixture2
-</div>
-`;
-
-exports[`LoadableComponent timeout 1`] = `
-<div>
-  MyLoadingComponent 
-  {"timedOut":false}
-</div>
-`;
-
-exports[`LoadableComponent timeout 2`] = `
-<div>
-  MyLoadingComponent 
-  {"timedOut":false}
-</div>
-`;
-
-exports[`LoadableComponent timeout 3`] = `
-<div>
-  MyLoadingComponent 
-  {"timedOut":true}
-</div>
-`;
-
-exports[`LoadableComponent timeout 4`] = `
-<div>
-  MyComponent 
-  {"prop":"foo"}
 </div>
 `;

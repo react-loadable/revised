@@ -32,11 +32,9 @@ Capture.displayName = 'Capture'
 
 type LoadableOptions<T, P> = {
 	loading: ComponentType<{
-		timedOut: boolean
 		error?: Error
 		retry(): any
 	}>
-	timeout?: number
 	webpack?(): string[]
 	loader(): Promise<T>
 	render?(loaded: T, props: P): ReactElement
@@ -88,7 +86,6 @@ const defaultRenderer = <P, T extends {default: ComponentType<P>}>(
 
 type LoadableState<T, P, > = {
 	error?: Error
-	timedOut: boolean
 	loaded?: LoadableComponent<T, P>
 }
 
@@ -97,7 +94,6 @@ function createLoadableComponent<T, P>(
 		loading: Loading,
 		loader,
 		webpack,
-		timeout,
 		render = defaultRenderer as (loaded: T, props: P) => ReactElement,
 		...opts
 	}: LoadableOptions<T, P>
@@ -119,16 +115,23 @@ function createLoadableComponent<T, P>(
 	})
 
 	const LoadableComponent = (props: ComponentProps<LoadableComponent<T, P>>) => {
-		const report = useContext(CaptureContext)
-		const timedOutRef = useRef<ReturnType<typeof setTimeout>>()
 		init()
+
+		const report = useContext(CaptureContext)
+
 		const [state, setState] = useState<LoadableState<T, P>>({
 			error: loadState.error,
-			timedOut: false,
 			loaded: loadState.loaded
 		})
 		const firstStateRef = useRef<LoadableState<T, P> | undefined>(state)
+
 		const mountedRef = useRef<boolean>(false)
+		useEffect(() => {
+			mountedRef.current = true
+			return () => {
+				mountedRef.current = false
+			}
+		}, [])
 
 		//must be called asynchronously
 		const setStateWithMountCheck = useCallback((newState: Partial<LoadableState<T, P>>) => {
@@ -136,48 +139,26 @@ function createLoadableComponent<T, P>(
 			setState(cur => ({...cur, ...newState}))
 		}, [])
 
-		const clearTimeouts = useCallback(() => {
-			if (timedOutRef.current) {
-				clearTimeout(timedOutRef.current)
-				timedOutRef.current = undefined
-			}
-		}, [])
-
 		const loadModule = useCallback(async () => {
 			if (report && Array.isArray(opts['modules'])) for (const moduleName of opts['modules']) report(moduleName)
 			if (loadState.error || loadState.loaded) return
-			if (typeof timeout === 'number') {
-				clearTimeouts()
-				timedOutRef.current = setTimeout(() => {
-					setStateWithMountCheck({timedOut: true})
-				}, timeout)
-			}
 			try {
 				await loadState.promise
 			} catch {
 			} finally {
-				clearTimeouts()
 				setStateWithMountCheck({
 					error: loadState.error,
 					loaded: loadState.loaded,
 				})
 			}
-		}, [report, setStateWithMountCheck, clearTimeouts])
+		}, [report, setStateWithMountCheck])
 
 		const retry = useCallback(async () => {
 			if (!mountedRef.current) return
-			setState({error: undefined, timedOut: false, loaded: undefined})
+			setState({error: undefined, loaded: undefined})
 			loadState = load(loader as any)
 			await loadModule()
 		}, [loadModule])
-
-		useEffect(() => {
-			mountedRef.current = true
-			return () => {
-				mountedRef.current = false
-				clearTimeouts()
-			}
-		}, [clearTimeouts])
 
 		if (firstStateRef.current) {
 			loadModule()
@@ -186,7 +167,6 @@ function createLoadableComponent<T, P>(
 
 		return !state.loaded || state.error
 			? <Loading
-				timedOut={state.timedOut}
 				error={state.error}
 				retry={retry}
 			/>

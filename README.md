@@ -113,10 +113,9 @@ const LoadableContact = loadable({
 
 6. Simplify the `Loading` component.
 
-New: the `Loading` component should accept only 3 props:
-- `timedOut: boolean`
-- `error?: Error`
+New: the `Loading` component should accept only 2 props:
+- `error?: Error`: when error is null, the component is being loaded.
 - `retry(): any`
 
-Rational: showing the loading state after a delay can be done trivially within the Loading component's implementation.
-While this reduces a lot of burden for maintaining the source code of this project.
+Rational: showing the loading/timed out states after a delay can be done trivially within the Loading component's implementation.
+While this hugely reduces burden for maintaining this project.
