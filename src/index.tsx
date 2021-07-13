@@ -14,8 +14,8 @@ import {
 type LoaderType<T, P> = () => Promise<LoadableComponent<T, P>>
 type LoaderTypeOptional<T, P> = () => Promise<LoadableComponent<T, P>> | undefined
 
-const ALL_INITIALIZERS: Array<LoaderType<any, any>> = []
-const READY_INITIALIZERS: Array<LoaderTypeOptional<any, any>> = []
+const ALL_INITIALIZERS: LoaderType<any, any>[] = []
+const READY_INITIALIZERS: LoaderTypeOptional<any, any>[] = []
 const CaptureContext = createContext<((moduleId: string) => any) | undefined>(undefined)
 CaptureContext.displayName = 'Capture'
 
@@ -119,24 +119,14 @@ function createLoadableComponent<T, P>(
 
 		const report = useContext(CaptureContext)
 
-		const [state, setState] = useState<LoadableState<T, P>>({
+		let [state, setState] = useState<LoadableState<T, P>>({
 			error: loadState.error,
 			loaded: loadState.loaded
 		})
-		const firstStateRef = useRef<LoadableState<T, P> | undefined>(state)
-
 		const mountedRef = useRef<boolean>(false)
 		useEffect(() => {
 			mountedRef.current = true
-			return () => {
-				mountedRef.current = false
-			}
-		}, [])
-
-		//must be called asynchronously
-		const setStateWithMountCheck = useCallback((newState: Partial<LoadableState<T, P>>) => {
-			if (!mountedRef.current) return
-			setState(cur => ({...cur, ...newState}))
+			return () => void(mountedRef.current = false)
 		}, [])
 
 		const loadModule = useCallback(async () => {
@@ -146,12 +136,14 @@ function createLoadableComponent<T, P>(
 				await loadState.promise
 			} catch {
 			} finally {
-				setStateWithMountCheck({
+				const newState = {
 					error: loadState.error,
 					loaded: loadState.loaded,
-				})
+				}
+				if (mountedRef.current) setState(newState)
+				else state = newState
 			}
-		}, [report, setStateWithMountCheck])
+		}, [report, mountedRef])
 
 		const retry = useCallback(async () => {
 			if (!mountedRef.current) return
@@ -160,16 +152,14 @@ function createLoadableComponent<T, P>(
 			await loadModule()
 		}, [loadModule])
 
+		const firstStateRef = useRef<LoadableState<T, P> | undefined>(state)
 		if (firstStateRef.current) {
 			loadModule()
 			firstStateRef.current = undefined
 		}
 
 		return !state.loaded || state.error
-			? <Loading
-				error={state.error}
-				retry={retry}
-			/>
+			? <Loading error={state.error} retry={retry}/>
 			: render(state.loaded as any, props as any)
 	}
 
@@ -179,7 +169,7 @@ function createLoadableComponent<T, P>(
 	return LoadableComponent as any
 }
 
-const flushInitializers = async <T, P>(initializers: Array<LoaderType<T, P> | LoaderTypeOptional<T, P>>): Promise<void> => {
+const flushInitializers = async <T, P>(initializers: (LoaderType<T, P> | LoaderTypeOptional<T, P>)[]): Promise<void> => {
 	const promises = []
 	while (initializers.length) promises.push(initializers.pop()!())
 	await Promise.all(promises)
