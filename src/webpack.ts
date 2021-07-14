@@ -1,3 +1,4 @@
+import path from 'path'
 import webpack, {Chunk, ChunkGraph, Compilation, Compiler} from 'webpack'
 
 type ChunkGroup = Parameters<typeof Chunk.prototype.addGroup>[0]
@@ -30,7 +31,18 @@ const getAssetsOfChunkGroups = (chunkGroups?: ChunkGroup[]) => {
 			assets.add(asset)
 	return [...assets.values()]
 }
-const buildManifest = (compilation: Compilation, _includeHotUpdate?: boolean, _includeSourceMaps?: boolean) => {
+const buildManifest = (
+	compilation: Compilation,
+	{
+		moduleNameTransform,
+		absPath,
+	}: {
+		includeHotUpdate?: boolean
+		includeSourceMap?: boolean
+		moduleNameTransform?(moduleName: string): string
+		absPath?: boolean
+	}
+	) => {
 	const entryToId: Record<string, string> = {}
 	const runtimeAssets: Record<string, string[]> = {}
 	const includedChunkGroups = new Set<string>()
@@ -48,9 +60,15 @@ const buildManifest = (compilation: Compilation, _includeHotUpdate?: boolean, _i
 		for (const origin of chunkGroup.origins)
 			if (isOriginDynamicImported(origin, chunkGroup)) {
 				includedChunkGroups.add(chunkGroup.id)
-				if (!originToChunkGroups[origin.request]) originToChunkGroups[origin.request] = []
-				if (!originToChunkGroups[origin.request].includes(chunkGroup.id))
-					originToChunkGroups[origin.request].push(chunkGroup.id)
+
+				const absModuleName = absPath && origin.request?.startsWith('./') && origin.module?.context
+					? path.resolve(origin.module.context, origin.request)
+					: origin.request
+				const moduleName = moduleNameTransform ? moduleNameTransform(absModuleName) : absModuleName
+
+				if (!originToChunkGroups[moduleName]) originToChunkGroups[moduleName] = []
+				if (!originToChunkGroups[moduleName].includes(chunkGroup.id))
+					originToChunkGroups[moduleName].push(chunkGroup.id)
 			}
 
 	const chunkGroupAssets: Record<string, string[]> = {}
@@ -99,12 +117,19 @@ export class ReactLoadablePlugin {
 		filename: string
 		includeHotUpdate?: boolean
 		includeSourceMap?: boolean
+		moduleNameTransform?(moduleName: string): string
+		absPath?: boolean
 	}) {}
 
 	apply(compiler: Compiler) {
 		const emit = (compilation: Compilation) => {
 			try {
-				const manifest = buildManifest(compilation, this.options.includeHotUpdate, this.options.includeSourceMap)
+				const manifest = buildManifest(compilation, {
+					includeHotUpdate: this.options.includeHotUpdate,
+					includeSourceMap: this.options.includeSourceMap,
+					moduleNameTransform: this.options.moduleNameTransform,
+					absPath: this.options.absPath,
+				})
 				const json = JSON.stringify(manifest, null, 2)
 				const source = new RawSource(json)
 				const assetName = this.options.filename

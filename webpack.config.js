@@ -29,7 +29,7 @@ const client = {
 							'syntax-dynamic-import',
 							'@babel/plugin-proposal-class-properties',
 							'@babel/plugin-transform-object-assign',
-							require.resolve('./babel'),
+							[require.resolve('./babel'), {absPath: true}],
 						],
 					}
 				},
@@ -45,6 +45,7 @@ const client = {
 	plugins: [
 		new ReactLoadablePlugin({
 			filename: '../react-loadable.json',
+			absPath: true,
 		}),
 	],
 	optimization: {
@@ -89,7 +90,7 @@ const server = {
 							'syntax-dynamic-import',
 							'@babel/plugin-proposal-class-properties',
 							'@babel/plugin-transform-object-assign',
-							require.resolve('./babel'),
+							[require.resolve('./babel'), {absPath: true}],
 						],
 					}
 				},

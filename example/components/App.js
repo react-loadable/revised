@@ -9,6 +9,13 @@ const LoadableExample = loadable({
 	loading: Loading,
 })
 
+loadable({
+	loader() {
+		return import('react') // to test context console.log
+	},
+	loading: Loading
+})
+
 export default function App() {
 	return <>
 		<p><strong>Check the console for more log.</strong></p>

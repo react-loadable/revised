@@ -119,3 +119,25 @@ New: the `Loading` component should accept only 2 props:
 
 Rational: showing the loading/timed out states after a delay can be done trivially within the Loading component's implementation.
 While this hugely reduces burden for maintaining this project.
+
+7. (From version 1.1.0)
+- New option to the Webpack plugin:
+
+  - `absPath?: boolean`: convert the imported module name to absolute based on the context of the importer.
+  - `moduleNameTransform?: (moduleName: string) => string`: optional transformer to transform the module name.
+    If `absPath` is `true`, the absolute path will be passed to this function.
+    This becomes useful when you want to make the module name relative.
+    For example: convert `/home/my-project/src/Example` to `~/src/Example`.
+    
+- New option to the Babel plugin:
+  
+  - `absPath?: boolean`: similar to the webpack plugin, when this option is enabled.
+    The `modules: string[]` which is added to the `loader()` calls (used to identify which module to load in SSR) is added by absolute path of the imported module.
+  - `shortenPath?: string`: if truthy, the plugin will truncate the module name with `shortenPath`.
+  
+These options are all optional, if they are not specified, the behavior of the plugin keeps unchanged.
+They are added for these purposes:
+- Previously, if the imported module have the same literal names. Even if they point to different modules, we can not distinguish them from the plugin's output.
+Now, with the `absPath` option, all modules are separated.
+- The `shortendPath` option helps to create a consistent webpack output in different environments (e.g.: host machine build versus docker build).
+  Currently, it requires a counterpart option specified in the webpack plugin via `moduleNameTransform` (to truncate the root dir prefix).
