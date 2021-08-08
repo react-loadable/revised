@@ -26,6 +26,7 @@ There are several changes in this package compared to the origin.
 # API changes
 
 Most of APIs are the same as the original `react-loadable`, except the `getBundles` function.
+From `1.2.0`, `getBundles` was moved to `@react-loadable/revised/lib` (Reason: avoid requiring `webpack` module in production build).
 The new API interface are as follows.
 
 1. `getBundles(stats, modules, options)`

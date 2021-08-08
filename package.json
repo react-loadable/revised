@@ -8,16 +8,18 @@
 	"repository": "react-loadable/revised",
 	"files": [
 		"babel.js",
-		"webpack.js",
 		"babel.d.ts",
+		"webpack.js",
 		"webpack.d.ts",
-		"index.d.ts",
-		"index.js"
+		"lib.js",
+		"lib.d.ts",
+		"index.js",
+		"index.d.ts"
 	],
 	"scripts": {
 		"test": "jest --coverage",
 		"build": "tsc --downlevelIteration --jsx react-jsx --declaration --esModuleInterop --outDir ./ src/*",
-		"clean": "rm -rf coverage example/dist node_modules/.cache babel.js babel.d.ts webpack.js webpack.d.ts index.d.ts index.js",
+		"clean": "rm -rf coverage example/dist node_modules/.cache babel.js babel.d.ts webpack.js webpack.d.ts index.d.ts index.js lib.d.ts lib.js",
 		"start": "webpack --mode=development && node example/dist/server/main.js",
 		"start-4": "yarn add -D webpack@webpack-4 && yarn start",
 		"restore-5": "yarn add -D webpack",

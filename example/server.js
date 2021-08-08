@@ -3,7 +3,7 @@ import path from 'path'
 import React from 'react'
 import ReactDOMServer from 'react-dom/server'
 import {Capture, preloadAll} from '@react-loadable/revised'
-import {getBundles} from '@react-loadable/revised/webpack'
+import {getBundles} from '@react-loadable/revised/lib'
 import App from './components/App'
 import fs from 'fs'
 

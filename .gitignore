@@ -7,5 +7,7 @@ example/dist
 /babel.d.ts
 /webpack.js
 /webpack.d.ts
+/lib.js
+/lib.d.ts
 /index.js
 /index.d.ts
