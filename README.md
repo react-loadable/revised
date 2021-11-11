@@ -132,12 +132,23 @@ const {assets, preload, prefetch} = getBundles(getStats(), modules)
 - Injected the required bundles and the rendered `body` to the html document and returns to the client.
 
 ```javascript
+const Links = ({assets, prefetch}) => {
+	const urls = assets.filter(file => file.endsWith('.css'))
+	return prefetch
+		? urls.map((url, index) => <link rel={prefetch} as="style" href={url} key={index}/>)
+		: urls.map((url, index) => <link rel="stylesheet" href={url} key={index}/>)
+}
+const Scripts = ({assets, prefetch}) => {
+	const urls = assets.filter(file => file.endsWith('.js'))
+	return prefetch
+		? urls.map((url, index) => <link rel={prefetch} as="script" href={url} key={index}/>)
+		: urls.map((url, index) => <script src={url} key={index}/>)
+}
 const Html = ({assets, body, preload, prefetch}) => {
 	return <html lang="en">
 		<head>
 			<meta charSet="UTF-8"/>
 			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-			<meta httpEquiv="X-UA-Compatible" content="ie=edge"/>
 			<title>My App</title>
 			<Links assets={assets}/>
 			<Links assets={preload} prefetch="preload"/>
@@ -188,12 +199,13 @@ is `import(./nested/ExampleNested)`.
 Note: the server will not be able to distinguish if two modules have the same relative import path. It will load both of
 them.
 
-- `{absPath: true, shortenPath: undefined}`: Module identifier becomes `'/home/my-project/example/nested/ExampleNested'`.
+- `{absPath: true, shortenPath: undefined}`: Module identifier becomes `'/home/my-project/example/nested/ExampleNested'`
+	.
 
 Note: this will make your build less portable because the module identifier will be different in different environments.
 
 - `{absPath: true, shortenPath: ''}`: Module identifier becomes `'/example/nested/ExampleNested'`.
-- `{absPath: true, shortenPath: '~'}`: Module identifier becomes `'~/example/nested/ExampleNested'`.
+- (recommended) `{absPath: true, shortenPath: '~'}`: Module identifier becomes `'~/example/nested/ExampleNested'`.
 
 Note: this requires the accompanied from the webpack plugin configuration.
 
@@ -230,10 +242,10 @@ class ReactLoadablePlugin {
 
 ## `loadable({loader(): Promise<Component<{}>>, loading: Component<{error?: Error, retry(): any}>})`
 
-New: the `Loading` component should accept only 2 props:
+The `Loading` component should accept only 2 props:
 
-- `error?: Error`: when error is null, the component is being loaded. Otherwise, there is an error. If the data is
-	ready, this component will not be rendered.
+- `error?: Error`: when error is `undefined`, the component is being loaded. Otherwise, there is an error. If the data
+	is ready, this component will not be rendered.
 - `retry(): any`: to retry if there is an error.
 
 ## Other APIs
@@ -255,37 +267,13 @@ I recommend use the default option as mentioned in the How section.
 Note: if `preserveEntriesOrder` is set (`true`), to prevent the dynamically imported components (lodable components)
 from being loaded twice, the entry should be executed after everything is loaded.
 
-Check this example, the main logic of the entry is placed in a global function, and executed after all.
-
-```javascript
-import {preloadReady} from '@react-loadable/revised'
-import {hydrate} from 'react-dom'
-
-window.main = async () => {
-	await preloadReady()
-	hydrate(<App/>, document.getElementById('#root'))
-}
-```
-
-In the server side:
-
-```javascript
-{
-	assets.filter(url => url.endsWith('.css')).map(url => <link rel="stylesheet" href={url} key={url}/>)
-}
-{
-	assets.filter(url => url.endsWith('.js')).map(url => <script src={url} key={url}/>)
-}
-<script>window.main()</script>
-```
-
 The output assets are returned in the following orders unless the `preserveEntriesOrder` option is set.
 
 - Highest order (first elements): javascript assets which belong to at least one of the input entries (specified via
 	the `options` parameter).
 - Lower order (last elements): javascript assets which belong to at least one of the input entries, but are not runtime
 	assets.
-- All other assets' orders are kept unchnaged.
+- All other assets' orders are kept unchanged.
 
 # Improved features from the original `react-loadable`
 
