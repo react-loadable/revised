@@ -25,8 +25,7 @@ import {Capture} from '@react-loadable/revised' // the wrapper context, used in 
 
 ## Babel config
 
-Include `'@react-loadable/revised/babel'` in your babel plugin list.
-This is required for both client and server builds.
+Include `'@react-loadable/revised/babel'` in your babel plugin list. This is required for both client and server builds.
 
 The babel plugin finds all calls to `loadable({loader() {}, ...})`. It scans for all `import()` call in the `loader`
 body, and inject the module identifiers for later uses.
@@ -59,40 +58,183 @@ loadable({
 
 ## Webpack config
 
-# Improved features from the original `react-loadable`
+Webpack plugin is required **only** in your client build. Include the webpack plugin in the webpack plugin list.
 
-There are several changes in this package compared to the origin.
+[See example](https://github.com/react-loadable/revised/blob/93f97770cc2825ae7cd6c443ab59641ee1b5a146/webpack.config.js#L47)
 
-- Support webpack 4 and webpack 5.
-- Support newer webpack's structure by loading assets from chunk groups, instead of from chunks.
-- Support preload, prefetch assets.
-- Filter hot update assets by default. This can be changed by options.
-- Simpler stats file format.
-- Rewritten in Typescript.
-- Converted to ES6 module.
-- Assets aer sorted in output.
-- Support short hand definition of loadable component definition.
-- Remove `LoadableMap`.
-- And many more...
+```javascript
+new ReactLoadablePlugin({
+	async callback(manifest) {
+		// save the manifest somewhere to be read by the server
+		await writeFile(path.join(__dirname, 'example', 'dist/manifest.json'), JSON.stringify(manifest, null, 2))
+	},
+	absPath: true,
+})
+```
 
-# API changes
+## In react code
 
-Most of APIs are the same as the original `react-loadable`, except the `getBundles` function. From `1.2.0`, `getBundles`
-was moved to `@react-loadable/revised/lib` (Reason: avoid requiring `webpack` module in production build). The new API
-interface are as follows.
+Wrap your split component with `loadable({loader() {}, ...})` to get the `loadable` component.
+[For example](https://github.com/react-loadable/revised/blob/1add49804cc246dd91f9600f0ad5bc49a276b791/example/components/Example.js#L5):
 
-1. `getBundles(stats, modules, options)`
+```javascript
+const LoadableNested = loadable({
+	loader: () => import('./ExampleNested'),
+	loading: Loading,
+})
+```
 
-- returns `{assets, preload, prefetch}`. Where `assets`, `preload`, `prefetch` are the main assets, preload assets,
-  prefetch assets, respectively.
-- `options` is an optional parameter with the following keys.
-    * `entries`: `string[]` (default: `['main']`). Name of the entries in webpack.
-    * `includeHotUpdate`: `boolean` (default: `false`). Specify whether hot update assets are included.
-    * `includeSourceMap`: `boolean` (default: `false`). Specify whether source maps are included.
-    * `publicPath`: `string` (default: `output.publicPath` value in the webpack config). Overwrite
-      the `output.publicPath` config.
-    * `preserveEntriesOrder`: `boolean` (default: `false`). If `true` the javascript assets of the entry chunks will not
-      be moved to the end of the returned arrays.
+**Note**: you must call `loadable({...})` at the top-level of the module. Otherwise, make sure to call them all before
+calling `preloadAll()` or `preloadReady()`.
+
+## In server side
+
+- Call and await for `preloadAll()` once in the server side to pre-load all the components. For
+  example: [when the server starts serving](https://github.com/react-loadable/revised/blob/fbccbfed39a1e8dbf799e69311c7366c78649b01/example/server.js#L66)
+  .
+
+- Load the exported manifest.json file.
+
+```javascript
+// in production, this should be cached in the memory to reduce IO calls.
+const getStats = () => JSON.parse(fs.readFileSync(path.resolve(__dirname, 'dist/react-loadable.json'), 'utf8'))
+ ```
+
+- Wrap the rendered component with `Capture` to capture the pre-loaded components.
+
+[See example](https://github.com/react-loadable/revised/blob/fbccbfed39a1e8dbf799e69311c7366c78649b01/example/server.js#L49)
+
+```javascript
+const modules = [] // one list for one request, don't share
+const body = ReactDOMServer.renderToString(
+	<Capture report={moduleName => modules.push(moduleName)}>
+		<App/>
+	</Capture>
+)
+```
+
+- After rendering the component, use `getBundles()` to determine which bundles are required.
+
+```javascript
+const {assets, preload, prefetch} = getBundles(getStats(), modules)
+ ```
+
+- Injected the required bundles and the rendered `body` to the html document and returns to the client.
+
+```javascript
+const Html = ({assets, body, preload, prefetch}) => {
+	return <html lang="en">
+		<head>
+			<meta charSet="UTF-8"/>
+			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+			<meta httpEquiv="X-UA-Compatible" content="ie=edge"/>
+			<title>My App</title>
+			<Links assets={assets}/>
+			<Links assets={preload} prefetch="preload"/>
+			<Links assets={prefetch} prefetch="prefetch"/>
+			<Scripts assets={preload} prefetch="preload"/>
+			<Scripts assets={prefetch} prefetch="prefetch"/>
+		</head>
+		<body>
+			<div id="app" dangerouslySetInnerHTML={{__html: body}}/>
+			<Scripts assets={assets}/>
+		</body>
+	</html>
+}
+
+res.send(`<!doctype html>
+// note: NOT renderToString()
+${ReactDOMServer.renderToStaticMarkup(<Html
+	assets={assets}
+	body={body}
+	preload={preload}
+	prefetch={prefetch}
+/>)}`)
+```
+
+## In client side
+
+- Call and await for `preloadReady()` before hydration.
+  [Example](https://github.com/react-loadable/revised/blob/1add49804cc246dd91f9600f0ad5bc49a276b791/example/client.js#L6)
+
+# API
+
+## Babel plugin
+
+- Default import from `@react-loadable/revised/babel`
+- Option: `{ shortenPath?: string, absPath?: boolean}`
+
+For example: the project root dir is '/home/my-project'. In `example/Example.js`, there
+is `import(./nested/ExampleNested)`.
+
+- `{absPath: false}`: `shortenPath` option is ignored. Module identifier is `'./nested/ExampleNested''`.
+
+Note: the server will not be able to distinguish if two modules have the same relative import path. It will load both of
+them.
+
+- `{absPath: true, shortenPath: undefined}`: Module identifier is `'/home/my-project/example/nested/ExampleNested''`.
+
+Note: this will make your build less portable because the module identifier will be different in different environments.
+
+- `{absPath: true, shortenPath: ''}`: Module identifier is `'/example/nested/ExampleNested''`.
+- `{absPath: true, shortenPath: '~'}`: Module identifier is `'~/example/nested/ExampleNested''`.
+
+Note: this requires the accompanied from the webpack plugin configuration.
+
+## Webpack plugin
+
+The webpack plugin `ReactLoadablePlugin` has the following options:
+
+```typescript
+class ReactLoadablePlugin {
+	constructor(options: {
+		callback(manifest: LoadableManifest): any
+		moduleNameTransform?(moduleName: string): string
+		absPath?: boolean
+	})
+}
+```
+
+- `absPath`: should be true if `absPath` is true in the babel plugin option.
+- `moduleNameTransform?(moduleName: string): string`: take the module name (absolute path if `absPath` is true) and
+  return the transformed path. If `shortenPath` is `'~'` in the babel plugin option. Use the following implementation:
+
+```javascript
+{
+	moduleNameTransform(moduleName)
+	{
+		return moduleName?.startsWith(rootDir)
+			? `~${moduleName.slice(rootDir.length)}`
+			: moduleName
+	}
+}
+```
+
+- `callback(manifest: LoadableManifest): any`: this callback should store the manifest somewhere for the server to use.
+
+## `loadable({loader(): Promise<Component<{}>>, loading: Component<{error?: Error, retry(): any}>})`
+
+New: the `Loading` component should accept only 2 props:
+
+- `error?: Error`: when error is null, the component is being loaded. Otherwise, there is an error. If the data is
+  ready, this component will not be rendered.
+- `retry(): any`: to retry if there is an error.
+
+## Other APIs
+
+I recommend use the default option as mentioned in the How section.
+
+- `getBundles(stats, modules, options)`
+    - returns `{assets, preload, prefetch}`. Where `assets`, `preload`, `prefetch` are the main assets, preload assets,
+      prefetch assets, respectively.
+    - `options` is an optional parameter with the following keys.
+        * `entries`: `string[]` (default: `['main']`). Name of the entries in webpack.
+        * `includeHotUpdate`: `boolean` (default: `false`). Specify whether hot update assets are included.
+        * `includeSourceMap`: `boolean` (default: `false`). Specify whether source maps are included.
+        * `publicPath`: `string` (default: `output.publicPath` value in the webpack config). Overwrite
+          the `output.publicPath` config.
+        * `preserveEntriesOrder`: `boolean` (default: `false`). If `true` the javascript assets of the entry chunks will
+          not be moved to the end of the returned arrays.
 
 Note: if `preserveEntriesOrder` is set (`true`), to prevent the dynamically imported components (lodable components)
 from being loaded twice, the entry should be executed after everything is loaded.
@@ -121,29 +263,7 @@ In the server side:
 <script>window.main()</script>
 ```
 
-2. The `filename` option in the webpack plugin now is relative to the output path regardless of whether the `filename`
-   value is absolute or relative.
-
-3. All exported modules are in ES6.
-
-Old:
-
-```javascript
-const loadable = require('react-loadable')
-//loadable.Map
-//loadable.preloadAll
-//loadable.preloadReady
-```
-
-New:
-
-```javascript
-import loadable, {preloadAll, preloadReady} from '@react-loadable/revised'
-```
-
-3. `LoadableMap` was removed.
-
-4. (Advanced) The output assets are returned in the following orders unless the `preserveEntriesOrder` option is set.
+The output assets are returned in the following orders unless the `preserveEntriesOrder` option is set.
 
 - Highest order (first elements): javascript assets which belong to at least one of the input entries (specified via
   the `options` parameter).
@@ -151,63 +271,19 @@ import loadable, {preloadAll, preloadReady} from '@react-loadable/revised'
   assets.
 - All other assets' orders are kept unchnaged.
 
-5. Support short-hand definition of loadable component definition.
+# Improved features from the original `react-loadable`
 
-Old: only support this pattern.
+There are several changes in this package compared to the origin.
 
-```javascript
-import loadable from '@react-loadable/revised'
+- Support webpack 4 and webpack 5.
+- Support newer webpack's structure by loading assets from chunk groups, instead of from chunks.
+- Support preload, prefetch assets.
+- Filter hot update assets by default. This can be changed by options.
+- Simpler stats file format.
+- Rewritten in Typescript.
+- Converted to ES6 module.
+- Assets aer sorted in output.
+- Support short hand definition of loadable component definition.
+- Remove `LoadableMap`.
+- And many more...
 
-const LoadableContact = loadable({
-	loader: () => import('./pages/Contact'),
-	loading: Loading
-})
-```
-
-New: support the existing pattern and this new pattern.
-
-```javascript
-import loadable from '@react-loadable/revised'
-
-const LoadableContact = loadable({
-	loader() {
-		return import('./pages/Contact')
-	},
-	loading: Loading
-})
-```
-
-6. Simplify the `Loading` component.
-
-New: the `Loading` component should accept only 2 props:
-
-- `error?: Error`: when error is null, the component is being loaded.
-- `retry(): any`
-
-Rational: showing the loading/timed out states after a delay can be done trivially within the Loading component's
-implementation. While this hugely reduces burden for maintaining this project.
-
-7. (From version 1.1.0)
-
-- New option to the Webpack plugin:
-
-    - `absPath?: boolean`: convert the imported module name to absolute based on the context of the importer.
-    - `moduleNameTransform?: (moduleName: string) => string`: optional transformer to transform the module name.
-      If `absPath` is `true`, the absolute path will be passed to this function. This becomes useful when you want to
-      make the module name relative. For example: convert `/home/my-project/src/Example` to `~/src/Example`.
-
-- New option to the Babel plugin:
-
-    - `absPath?: boolean`: similar to the webpack plugin, when this option is enabled. The `modules: string[]` which is
-      added to the `loader()` calls (used to identify which module to load in SSR) is added by absolute path of the
-      imported module.
-    - `shortenPath?: string`: if truthy, the plugin will truncate the module name with `shortenPath`.
-
-These options are all optional, if they are not specified, the behavior of the plugin keeps unchanged. They are added
-for these purposes:
-
-- Previously, if the imported module have the same literal names. Even if they point to different modules, we can not
-  distinguish them from the plugin's output. Now, with the `absPath` option, all modules are separated.
-- The `shortendPath` option helps to create a consistent webpack output in different environments (e.g.: host machine
-  build versus docker build). Currently, it requires a counterpart option specified in the webpack plugin
-  via `moduleNameTransform` (to truncate the root dir prefix).

@@ -3,7 +3,7 @@
 // https://astexplorer.net/
 import nodePath from 'path'
 
-export default ({ types: t, /*template*/ }, {shortenPath, absPath}: {
+export default ({types: t, /*template*/}, {shortenPath, absPath}: {
 	shortenPath?: string
 	absPath?: boolean
 }) => {
@@ -81,11 +81,11 @@ export default ({ types: t, /*template*/ }, {shortenPath, absPath}: {
 								t.arrayExpression(
 									dynamicImports.map(dynamicImport => {
 										const node = dynamicImport.get('arguments')[0].node
-										if (shortenPath && node.type === 'StringLiteral') {
+										if (absPath && node.type === 'StringLiteral') {
 											const {value} = node
 											if (typeof value === 'string') {
-												const resolvedPath = absPath  && value.startsWith('./') ? nodePath.resolve(dir, value) : value
-												const afterShortenPath = resolvedPath.startsWith(rootDir)
+												const resolvedPath = absPath && value.startsWith('./') ? nodePath.resolve(dir, value) : value
+												const afterShortenPath = typeof shortenPath === 'string' && resolvedPath.startsWith(rootDir)
 													? `${shortenPath}${resolvedPath.slice(rootDir.length)}`
 													: resolvedPath
 												return t.stringLiteral(afterShortenPath)

@@ -38,8 +38,6 @@ const buildManifest = (
 		moduleNameTransform,
 		absPath,
 	}: {
-		includeHotUpdate?: boolean
-		includeSourceMap?: boolean
 		moduleNameTransform?(moduleName: string): string
 		absPath?: boolean
 	}
@@ -114,8 +112,6 @@ const pluginName = '@react-loadable/revised'
 export class ReactLoadablePlugin {
 	constructor(private options: {
 		callback(manifest: LoadableManifest): any
-		includeHotUpdate?: boolean
-		includeSourceMap?: boolean
 		moduleNameTransform?(moduleName: string): string
 		absPath?: boolean
 	}) {}
@@ -124,8 +120,6 @@ export class ReactLoadablePlugin {
 		const emit = (compilation: Compilation) => {
 			try {
 				const manifest = buildManifest(compilation, {
-					includeHotUpdate: this.options.includeHotUpdate,
-					includeSourceMap: this.options.includeSourceMap,
 					moduleNameTransform: this.options.moduleNameTransform,
 					absPath: this.options.absPath,
 				})
