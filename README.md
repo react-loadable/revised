@@ -9,6 +9,17 @@ The new package name: `@react-loadable/revised`.
 There are several bugs in the original `react-loadable` package. The author abandoned it a long time ago. This is a
 revised and actively maintained version of the original `react-loadable` package.
 
+# Why use this?
+
+The code base is very clean and simple.
+Less code means less maintenance cost (hence, maybe less bugs?)
+
+There are only 4 files in the package:
+- The babel plugin: ~100 lines.
+- The webpack plugin: ~150 lines.
+- The main loadable component: ~200 lines.
+- The library: ~100 lines.
+
 # How
 
 The library exports the following APIs:
