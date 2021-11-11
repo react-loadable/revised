@@ -79,8 +79,10 @@ Wrap your split component with `loadable({loader() {}, ...})` to get the `loadab
 
 ```javascript
 const LoadableNested = loadable({
-	loader: () => import('./ExampleNested'),
-	loading: Loading,
+	loader() {
+		return import('./ExampleNested')
+	},
+	loading: Loading
 })
 ```
 
@@ -90,8 +92,8 @@ calling `preloadAll()` or `preloadReady()`.
 ## In server side
 
 - Call and await for `preloadAll()` once in the server side to pre-load all the components. For
-  example: [when the server starts serving](https://github.com/react-loadable/revised/blob/fbccbfed39a1e8dbf799e69311c7366c78649b01/example/server.js#L66)
-  .
+	example: [when the server starts serving](https://github.com/react-loadable/revised/blob/fbccbfed39a1e8dbf799e69311c7366c78649b01/example/server.js#L66)
+	.
 
 - Load the exported manifest.json file.
 
@@ -155,7 +157,7 @@ ${ReactDOMServer.renderToStaticMarkup(<Html
 ## In client side
 
 - Call and await for `preloadReady()` before hydration.
-  [Example](https://github.com/react-loadable/revised/blob/1add49804cc246dd91f9600f0ad5bc49a276b791/example/client.js#L6)
+	[Example](https://github.com/react-loadable/revised/blob/1add49804cc246dd91f9600f0ad5bc49a276b791/example/client.js#L6)
 
 # API
 
@@ -197,7 +199,7 @@ class ReactLoadablePlugin {
 
 - `absPath`: should be true if `absPath` is true in the babel plugin option.
 - `moduleNameTransform?(moduleName: string): string`: take the module name (absolute path if `absPath` is true) and
-  return the transformed path. If `shortenPath` is `'~'` in the babel plugin option. Use the following implementation:
+	return the transformed path. If `shortenPath` is `'~'` in the babel plugin option. Use the following implementation:
 
 ```javascript
 {
@@ -217,7 +219,7 @@ class ReactLoadablePlugin {
 New: the `Loading` component should accept only 2 props:
 
 - `error?: Error`: when error is null, the component is being loaded. Otherwise, there is an error. If the data is
-  ready, this component will not be rendered.
+	ready, this component will not be rendered.
 - `retry(): any`: to retry if there is an error.
 
 ## Other APIs
@@ -225,16 +227,16 @@ New: the `Loading` component should accept only 2 props:
 I recommend use the default option as mentioned in the How section.
 
 - `getBundles(stats, modules, options)`
-    - returns `{assets, preload, prefetch}`. Where `assets`, `preload`, `prefetch` are the main assets, preload assets,
-      prefetch assets, respectively.
-    - `options` is an optional parameter with the following keys.
-        * `entries`: `string[]` (default: `['main']`). Name of the entries in webpack.
-        * `includeHotUpdate`: `boolean` (default: `false`). Specify whether hot update assets are included.
-        * `includeSourceMap`: `boolean` (default: `false`). Specify whether source maps are included.
-        * `publicPath`: `string` (default: `output.publicPath` value in the webpack config). Overwrite
-          the `output.publicPath` config.
-        * `preserveEntriesOrder`: `boolean` (default: `false`). If `true` the javascript assets of the entry chunks will
-          not be moved to the end of the returned arrays.
+	- returns `{assets, preload, prefetch}`. Where `assets`, `preload`, `prefetch` are the main assets, preload assets,
+		prefetch assets, respectively.
+	- `options` is an optional parameter with the following keys.
+		* `entries`: `string[]` (default: `['main']`). Name of the entries in webpack.
+		* `includeHotUpdate`: `boolean` (default: `false`). Specify whether hot update assets are included.
+		* `includeSourceMap`: `boolean` (default: `false`). Specify whether source maps are included.
+		* `publicPath`: `string` (default: `output.publicPath` value in the webpack config). Overwrite
+			the `output.publicPath` config.
+		* `preserveEntriesOrder`: `boolean` (default: `false`). If `true` the javascript assets of the entry chunks will not
+			be moved to the end of the returned arrays.
 
 Note: if `preserveEntriesOrder` is set (`true`), to prevent the dynamically imported components (lodable components)
 from being loaded twice, the entry should be executed after everything is loaded.
@@ -266,9 +268,9 @@ In the server side:
 The output assets are returned in the following orders unless the `preserveEntriesOrder` option is set.
 
 - Highest order (first elements): javascript assets which belong to at least one of the input entries (specified via
-  the `options` parameter).
+	the `options` parameter).
 - Lower order (last elements): javascript assets which belong to at least one of the input entries, but are not runtime
-  assets.
+	assets.
 - All other assets' orders are kept unchnaged.
 
 # Improved features from the original `react-loadable`
