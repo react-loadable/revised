@@ -95,6 +95,14 @@ calling `preloadAll()` or `preloadReady()`.
 	example: [when the server starts serving](https://github.com/react-loadable/revised/blob/fbccbfed39a1e8dbf799e69311c7366c78649b01/example/server.js#L66)
 	.
 
+```javascript
+preloadAll().then(() => {
+	app.listen(3000, () => {
+		console.log('Running on http://localhost:3000/')
+	})
+}).catch(console.error)
+```
+
 - Load the exported manifest.json file.
 
 ```javascript
@@ -144,8 +152,8 @@ const Html = ({assets, body, preload, prefetch}) => {
 	</html>
 }
 
+// note: use renderToStaticMarkup, NOT renderToString()
 res.send(`<!doctype html>
-// note: NOT renderToString()
 ${ReactDOMServer.renderToStaticMarkup(<Html
 	assets={assets}
 	body={body}
@@ -159,6 +167,12 @@ ${ReactDOMServer.renderToStaticMarkup(<Html
 - Call and await for `preloadReady()` before hydration.
 	[Example](https://github.com/react-loadable/revised/blob/1add49804cc246dd91f9600f0ad5bc49a276b791/example/client.js#L6)
 
+```javascript
+preloadReady().then(() => {
+	ReactDOM.hydrate(<App/>, document.getElementById('app'))
+}).catch(console.error)
+```
+
 # API
 
 ## Babel plugin
@@ -166,20 +180,20 @@ ${ReactDOMServer.renderToStaticMarkup(<Html
 - Default import from `@react-loadable/revised/babel`
 - Option: `{ shortenPath?: string, absPath?: boolean}`
 
-For example: the project root dir is '/home/my-project'. In `example/Example.js`, there
+For example: the project root dir is `/home/my-project`. In `example/Example.js`, there
 is `import(./nested/ExampleNested)`.
 
-- `{absPath: false}`: `shortenPath` option is ignored. Module identifier is `'./nested/ExampleNested''`.
+- `{absPath: false}`: `shortenPath` is ignored. Module identifier becomes `'./nested/ExampleNested'`.
 
 Note: the server will not be able to distinguish if two modules have the same relative import path. It will load both of
 them.
 
-- `{absPath: true, shortenPath: undefined}`: Module identifier is `'/home/my-project/example/nested/ExampleNested''`.
+- `{absPath: true, shortenPath: undefined}`: Module identifier becomes `'/home/my-project/example/nested/ExampleNested'`.
 
 Note: this will make your build less portable because the module identifier will be different in different environments.
 
-- `{absPath: true, shortenPath: ''}`: Module identifier is `'/example/nested/ExampleNested''`.
-- `{absPath: true, shortenPath: '~'}`: Module identifier is `'~/example/nested/ExampleNested''`.
+- `{absPath: true, shortenPath: ''}`: Module identifier becomes `'/example/nested/ExampleNested'`.
+- `{absPath: true, shortenPath: '~'}`: Module identifier becomes `'~/example/nested/ExampleNested'`.
 
 Note: this requires the accompanied from the webpack plugin configuration.
 
