@@ -1,6 +1,7 @@
 const path = require('path')
 const {ReactLoadablePlugin} = require('./webpack')
 const nodeExternals = require('webpack-node-externals')
+const {writeFile} = require('fs/promises')
 
 const client = {
 	entry: {
@@ -44,7 +45,9 @@ const client = {
 	},
 	plugins: [
 		new ReactLoadablePlugin({
-			filename: '../react-loadable.json',
+			async callback(manifest) {
+				await writeFile(path.join(__dirname, 'example', 'dist/manifest.json'), JSON.stringify(manifest, null, 2))
+			},
 			absPath: true,
 		}),
 	],

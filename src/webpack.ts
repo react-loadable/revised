@@ -1,5 +1,6 @@
 import path from 'path'
-import webpack, {Chunk, ChunkGraph, Compilation, Compiler} from 'webpack'
+import type {Chunk, ChunkGraph, Compiler} from 'webpack'
+import webpack, {Compilation} from 'webpack'
 
 type ChunkGroup = Parameters<typeof Chunk.prototype.addGroup>[0]
 type Entrypoint = Parameters<typeof ChunkGraph.prototype.connectChunkAndEntryModule>[2]
@@ -42,7 +43,7 @@ const buildManifest = (
 		moduleNameTransform?(moduleName: string): string
 		absPath?: boolean
 	}
-	) => {
+	): LoadableManifest => {
 	const entryToId: Record<string, string> = {}
 	const runtimeAssets: Record<string, string[]> = {}
 	const includedChunkGroups = new Set<string>()
@@ -99,7 +100,7 @@ const buildManifest = (
 			(cg1, cg2) => chunkGroupSizes[cg1] - chunkGroupSizes[cg2]
 		)
 	return {
-		publicPath: compilation.outputOptions.publicPath,
+		publicPath: compilation.outputOptions.publicPath as string,
 		originToChunkGroups,
 		chunkGroupAssets,
 		preloadAssets,
@@ -110,11 +111,9 @@ const buildManifest = (
 }
 
 const pluginName = '@react-loadable/revised'
-// https://github.com/webpack/webpack/issues/11425#issuecomment-686607633
-const {RawSource} = webpack.sources || require('webpack-sources')
 export class ReactLoadablePlugin {
 	constructor(private options: {
-		filename: string
+		callback(manifest: LoadableManifest): any
 		includeHotUpdate?: boolean
 		includeSourceMap?: boolean
 		moduleNameTransform?(moduleName: string): string
@@ -130,11 +129,7 @@ export class ReactLoadablePlugin {
 					moduleNameTransform: this.options.moduleNameTransform,
 					absPath: this.options.absPath,
 				})
-				const json = JSON.stringify(manifest, null, 2)
-				const source = new RawSource(json)
-				const assetName = this.options.filename
-				if (compilation.getAsset(assetName)) compilation.updateAsset(assetName, source)
-				else compilation.emitAsset(assetName, source)
+				this.options.callback(manifest)
 			} catch (e) {
 				compilation.errors.push(e)
 			}
