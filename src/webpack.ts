@@ -117,13 +117,13 @@ export class ReactLoadablePlugin {
 	}) {}
 
 	apply(compiler: Compiler) {
-		const emit = (compilation: Compilation) => {
+		const emit = async (compilation: Compilation) => {
 			try {
 				const manifest = buildManifest(compilation, {
 					moduleNameTransform: this.options.moduleNameTransform,
 					absPath: this.options.absPath,
 				})
-				this.options.callback(manifest)
+				await this.options.callback(manifest)
 			} catch (e) {
 				compilation.errors.push(e)
 			}
