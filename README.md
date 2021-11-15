@@ -11,10 +11,10 @@ revised and actively maintained version of the original `react-loadable` package
 
 # Why use this?
 
-The code base is very clean and simple.
-Less code means less maintenance cost (hence, maybe less bugs?)
+The code base is very clean and simple. Less code means less maintenance cost (hence, maybe less bugs?)
 
 There are only 4 files in the package:
+
 - The babel plugin: ~100 lines.
 - The webpack plugin: ~150 lines.
 - The main loadable component: ~200 lines.
@@ -74,10 +74,15 @@ Webpack plugin is required **only** in your client build. Include the webpack pl
 [See example](https://github.com/react-loadable/revised/blob/93f97770cc2825ae7cd6c443ab59641ee1b5a146/webpack.config.js#L47)
 
 ```javascript
+const {writeFile} = require('fs/promises')
+
 new ReactLoadablePlugin({
 	async callback(manifest) {
 		// save the manifest somewhere to be read by the server
-		await writeFile(path.join(__dirname, 'example', 'dist/manifest.json'), JSON.stringify(manifest, null, 2))
+		await writeFile(
+			path.join(__dirname, 'dist/react-loadable.json'),
+			JSON.stringify(manifest, null, 2)
+		)
 	},
 	absPath: true,
 })
