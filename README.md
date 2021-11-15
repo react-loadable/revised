@@ -20,6 +20,8 @@ There are only 4 files in the package:
 - The main loadable component: ~200 lines.
 - The library: ~100 lines.
 
+The project has zero dependencies.
+
 # How
 
 The library exports the following APIs:
