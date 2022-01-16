@@ -3,7 +3,7 @@
 	"version": "1.3.1",
 	"description": "A higher order component for loading components with promises",
 	"main": "index.js",
-	"author": "Tran Sang <tr@nsang.me>",
+	"author": "Tran Sang <me@transa.ng>",
 	"license": "MIT",
 	"repository": "react-loadable/revised",
 	"files": [
