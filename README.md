@@ -40,10 +40,10 @@ import {Capture} from '@react-loadable/revised' // the wrapper context, used in 
 
 Include `'@react-loadable/revised/babel'` in your babel plugin list. This is required for both client and server builds.
 
-The babel plugin finds all calls to `loadable({loader() {}, ...})`. It scans for all `import()` call in the `loader`
+What the babel plugin does is to find all calls to `loadable({loader() {}, ...})`. It scans for all `import()` call in the `loader`
 body, and inject the module identifiers for later uses.
 
-Before:
+Your code:
 
 ```javascript
 loadable({
@@ -54,7 +54,7 @@ loadable({
 })
 ```
 
-After:
+The babel plugin transfers the code into this:
 
 ```javascript
 loadable({
