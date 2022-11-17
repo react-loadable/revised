@@ -6,7 +6,7 @@ import nodePath from 'path'
 export default ({types: t, /*template*/}, {shortenPath, absPath}: {
 	shortenPath?: string
 	absPath?: boolean
-}) => {
+} = {}) => {
 	return ({
 		visitor: {
 			ImportDeclaration(path) {
