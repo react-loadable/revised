@@ -258,13 +258,29 @@ class ReactLoadablePlugin {
 
 - `callback(manifest: LoadableManifest): any`: this callback should store the manifest somewhere for the server to use.
 
-## `loadable({loader(): Promise<Component<{}>>, loading: Component<{error?: Error, retry(): any}>})`
+## `loadable(opts)`
 
-The `Loading` component should accept only 2 props:
+Where `opts`'s interface is
+```typescript
+{
+	loader(): Promise<T>
+	loading: Component<{
+		error?: Error
+		retry(): any
+	}>
+	render?(loaded: T, props: P): ReactElement
+}
+```
+
+The `loading` component should accept 2 props:
 
 - `error?: Error`: when error is `undefined`, the component is being loaded. Otherwise, there is an error. If the data
 	is ready, this component will not be rendered.
 - `retry(): any`: to retry if there is an error.
+
+The `loader` function should return a promise that resolves to the loaded data.
+
+The `render` function is optional. If not specified, the default render function is used. The default render function is `loaded => <loaded.default {...props}/>`.
 
 ## Other APIs
 
