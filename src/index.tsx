@@ -119,13 +119,18 @@ function createLoadableComponent<T, P>(
 
 		const report = useContext(CaptureContext)
 
-		let [state, setState] = useState<LoadableState<T, P>>({
+		const [state, setState] = useState<LoadableState<T, P>>({
 			error: loadState.error,
 			loaded: loadState.loaded
 		})
 		const mountedRef = useRef<boolean>(false)
+		const pendingStateRef = useRef<LoadableState<T, P>>()
 		useEffect(() => {
 			mountedRef.current = true
+			if (pendingStateRef.current) {
+				setState(pendingStateRef.current)
+				pendingStateRef.current = undefined
+			}
 			return () => void(mountedRef.current = false)
 		}, [])
 
@@ -141,7 +146,7 @@ function createLoadableComponent<T, P>(
 					loaded: loadState.loaded,
 				}
 				if (mountedRef.current) setState(newState)
-				else state = newState
+				else pendingStateRef.current = newState
 			}
 		}, [report, mountedRef])
 
