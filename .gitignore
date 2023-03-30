@@ -5,9 +5,13 @@ coverage
 example/dist
 /babel.js
 /babel.d.ts
+/babel.js.map
 /webpack.js
 /webpack.d.ts
+/webpack.js.map
 /lib.js
 /lib.d.ts
+/lib.js.map
 /index.js
 /index.d.ts
+/index.js.map

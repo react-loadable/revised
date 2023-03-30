@@ -121,7 +121,7 @@ preloadAll().then(() => {
 }).catch(console.error)
 ```
 
-- Load the exported manifest.json file.
+- Load the exported `react-loadable.json` file.
 
 ```javascript
 // in production, this should be cached in the memory to reduce IO calls.

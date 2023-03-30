@@ -9,17 +9,21 @@
 	"files": [
 		"babel.js",
 		"babel.d.ts",
+		"babel.js.map",
 		"webpack.js",
 		"webpack.d.ts",
+		"webpack.js.map",
 		"lib.js",
 		"lib.d.ts",
+		"lib.js.map",
 		"index.js",
-		"index.d.ts"
+		"index.d.ts",
+		"index.js.map"
 	],
 	"scripts": {
 		"test": "jest --coverage",
-		"build": "tsc --downlevelIteration --jsx react-jsx --declaration --esModuleInterop --outDir ./ src/*",
-		"clean": "rm -rf coverage example/dist node_modules/.cache babel.js babel.d.ts webpack.js webpack.d.ts index.d.ts index.js lib.d.ts lib.js",
+		"build": "tsc --downlevelIteration --jsx react-jsx --declaration --sourceMap --esModuleInterop --outDir ./ index.tsx babel.ts lib.ts webpack.ts",
+		"clean": "rm -rf coverage example/dist node_modules/.cache babel.js babel.d.ts babel.js.map webpack.js webpack.d.ts webpack.js.map index.d.ts index.js index.js.map lib.d.ts lib.js lib.js.map",
 		"start": "webpack --mode=development && node example/dist/server/main.js",
 		"start-4": "yarn add -D webpack@webpack-4 && yarn start",
 		"restore-5": "yarn add -D webpack",

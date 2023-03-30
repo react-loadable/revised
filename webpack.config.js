@@ -46,7 +46,7 @@ const client = {
 	plugins: [
 		new ReactLoadablePlugin({
 			async callback(manifest) {
-				await writeFile(path.join(__dirname, 'example', 'dist/manifest.json'), JSON.stringify(manifest, null, 2))
+				await writeFile(path.join(__dirname, 'example', 'dist/react-loadable.json'), JSON.stringify(manifest, null, 2))
 			},
 			absPath: true,
 		}),
