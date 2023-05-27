@@ -6,44 +6,49 @@ The new package name: `@react-loadable/revised`.
 
 # Background
 
-There are several bugs in the original `react-loadable` package. The author abandoned it a long time ago. This is a
-revised and actively maintained version of the original `react-loadable` package.
+There are several bugs in the original `react-loadable` package.
+The author abandoned it a long time ago.
+This is a revised and actively maintained version of the original package.
 
-# Why use this?
+# Usage
 
-The code base is very clean and simple. Less code means less maintenance cost (hence, maybe less bugs?)
-
-There are only 4 files in the package:
-
-- The babel plugin: ~100 lines.
-- The webpack plugin: ~150 lines.
-- The main loadable component: ~200 lines.
-- The library: ~100 lines.
-
-The project has zero dependencies.
-
-# How
-
-The library exports the following APIs:
+Exported APIs
 
 ```javascript
-import babelPlugin from '@react-loadable/revised/babel' // the babel plugin
-import {ReactLoadablePlugin} from '@react-loadable/revised/webpack' // the webpack plugin
-import loadable from '@react-loadable/revised' // the main component to wrap your component
-import {preloadReady} from '@react-loadable/revised' // to load the pre-loaded components, used in client
-import {preloadAll} from '@react-loadable/revised' // to load all, used in server
-import {getBundles} from '@react-loadable/revised/lib' // determine which bundles are required
-import {Capture} from '@react-loadable/revised' // the wrapper context, used in server, to capture the pre-loaded components
+import babelPlugin from '@react-loadable/revised/babel'
+import {ReactLoadablePlugin} from '@react-loadable/revised/webpack'
+import loadable, {preloadReady, preloadAll, Capture} from '@react-loadable/revised'
+import {Capture} from '@react-loadable/revised'
 ```
+
+- `babelPlugin`: babel plugin.
+- `ReactLoadablePlugin`: webpack plugin.
+- `loadable`: the main component to wrap your component.
+- `preloadReady`: to load the pre-loaded components, used in client.
+- `preloadAll`: to load all, used in server.
+- `getBundles`: determine which bundles are required.
+- `Capture`: the wrapper context, used in server, to capture the pre-loaded components.
 
 ## Babel config
 
-Include `'@react-loadable/revised/babel'` in your babel plugin list. This is required for both client and server builds.
+Include `'@react-loadable/revised/babel'` in your babel plugin list.
+This is required for both client and server builds.
 
-What the babel plugin does is to find all calls to `loadable({loader() {}, ...})`. It scans for all `import()` call in the `loader`
-body, and inject the module identifiers for later uses.
+In `.babelrc`:
 
-Your code:
+```json
+{
+	"plugins": [
+		["@react-loadable/revised/babel", { "absPath": true }]
+	]
+}
+```
+
+The babel plugin finds all calls to `loadable({loader() {}, ...})`,
+scans all `import()` call in `loader`'s body,
+and inject the module identifiers to the object passed to `loadable()` for later uses.
+
+For example, it transforms:
 
 ```javascript
 loadable({
@@ -54,7 +59,7 @@ loadable({
 })
 ```
 
-The babel plugin transfers the code into this:
+into:
 
 ```javascript
 loadable({
@@ -62,8 +67,8 @@ loadable({
 		return import('./ExampleNested')
 	},
 	modules: ['./ExampleNested'],
-	webpack: function webpack() {
-		return ['./example/components/ExampleNested.js'] // or exactly require.resolveWeak('./ExampleNested')
+	webpack() {
+		return [require.resolveWeak('./ExampleNested')] // will be evaluated by Webpack to ['./example/components/ExampleNested.js']
 	},
 	loading: Loading,
 })
@@ -71,29 +76,32 @@ loadable({
 
 ## Webpack config
 
-Webpack plugin is required **only** in your client build. Include the webpack plugin in the webpack plugin list.
+Webpack plugin is required **only** in your client build.
+Include it in the webpack config's plugin list.
 
 [See example](https://github.com/react-loadable/revised/blob/93f97770cc2825ae7cd6c443ab59641ee1b5a146/webpack.config.js#L47)
 
 ```javascript
 const {writeFile} = require('fs/promises')
 
-new ReactLoadablePlugin({
-	async callback(manifest) {
-		// save the manifest somewhere to be read by the server
-		await writeFile(
-			path.join(__dirname, 'dist/react-loadable.json'),
-			JSON.stringify(manifest, null, 2)
-		)
-	},
-	absPath: true,
-})
+plugins: [
+	new ReactLoadablePlugin({
+		async callback(manifest) {
+			// save the manifest somewhere to be read by the server
+			await writeFile(
+				path.join(__dirname, 'dist/react-loadable.json'),
+				JSON.stringify(manifest, null, 2)
+			)
+		},
+		absPath: true,
+	}),
+]
 ```
 
 ## In react code
 
-Wrap your split component with `loadable({loader() {}, ...})` to get the `loadable` component.
-[For example](https://github.com/react-loadable/revised/blob/1add49804cc246dd91f9600f0ad5bc49a276b791/example/components/Example.js#L5):
+Wrap your split components with `loadable({loader() {}, ...})` to get the lazily loadable component.
+[Sample code](https://github.com/react-loadable/revised/blob/1add49804cc246dd91f9600f0ad5bc49a276b791/example/components/Example.js#L5):
 
 ```javascript
 const LoadableNested = loadable({
@@ -104,24 +112,22 @@ const LoadableNested = loadable({
 })
 ```
 
-**Note**: you must call `loadable({...})` at the top-level of the module. Otherwise, make sure to call them all before
-calling `preloadAll()` or `preloadReady()`.
+**Note**: you must call `loadable({...})` at the top-level of the module.
+Otherwise, make sure to call them all (via importing) before calling `preloadAll()` or `preloadReady()`.
 
 ## In server side
 
-- Call and await for `preloadAll()` once in the server side to pre-load all the components. For
-	example: [when the server starts serving](https://github.com/react-loadable/revised/blob/fbccbfed39a1e8dbf799e69311c7366c78649b01/example/server.js#L66)
-	.
+- Call and await for `preloadAll()` **once** in the server side to pre-load all the components.
+- For example: [when the server starts serving](https://github.com/react-loadable/revised/blob/fbccbfed39a1e8dbf799e69311c7366c78649b01/example/server.js#L66).
 
 ```javascript
-preloadAll().then(() => {
-	app.listen(3000, () => {
-		console.log('Running on http://localhost:3000/')
-	})
-}).catch(console.error)
+await preloadAll()
+app.listen(3000, () => {
+	console.log('Running on http://localhost:3000/')
+})
 ```
 
-- Load the exported `react-loadable.json` file.
+- Load the exported `react-loadable.json` file, which is generated by the webpack plugin, to get the manifest.
 
 ```javascript
 // in production, this should be cached in the memory to reduce IO calls.
@@ -147,7 +153,7 @@ const body = ReactDOMServer.renderToString(
 const {assets, preload, prefetch} = getBundles(getStats(), modules)
  ```
 
-- Injected the required bundles and the rendered `body` to the html document and returns to the client.
+- Inject the required bundles and rendered `body` to the html document and returns to the client.
 
 ```javascript
 const Links = ({assets, prefetch}) => {
@@ -197,28 +203,26 @@ ${ReactDOMServer.renderToStaticMarkup(<Html
 	[Example](https://github.com/react-loadable/revised/blob/1add49804cc246dd91f9600f0ad5bc49a276b791/example/client.js#L6)
 
 ```javascript
-preloadReady().then(() => {
-	ReactDOM.hydrate(<App/>, document.getElementById('app'))
-}).catch(console.error)
+await preloadReady()
+ReactDOM.hydrate(<App/>, document.getElementById('app'))
 ```
 
-# API
+# API reference
 
 ## Babel plugin
 
 - Default import from `@react-loadable/revised/babel`
-- Option: `{ shortenPath?: string, absPath?: boolean}`
+- Option: `{shortenPath?: string, absPath?: boolean}`
 
-For example: the project root dir is `/home/my-project`. In `example/Example.js`, there
-is `import(./nested/ExampleNested)`.
+For example: the project root dir is `/home/my-project`.
+In `example/Example.js`, there is `import(./nested/ExampleNested)`.
 
 - `{absPath: false}`: `shortenPath` is ignored. Module identifier becomes `'./nested/ExampleNested'`.
 
-Note: the server will not be able to distinguish if two modules have the same relative import path. It will load both of
-them.
+Note: the server will not be able to distinguish if two modules have the same relative import path.
+It will load both of them.
 
-- `{absPath: true, shortenPath: undefined}`: Module identifier becomes `'/home/my-project/example/nested/ExampleNested'`
-	.
+- `{absPath: true, shortenPath: undefined}`: Module identifier becomes `'/home/my-project/example/nested/ExampleNested'`.
 
 Note: this will make your build less portable because the module identifier will be different in different environments.
 
