@@ -3,7 +3,7 @@ import loadable from '@react-loadable/revised'
 import Loading from './Loading'
 
 const LoadableNested = loadable({
-	loader: () => import('./ExampleNested'),
+	loader: () => import('~/ExampleNested'),
 	loading: Loading,
 })
 

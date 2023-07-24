@@ -1,7 +1,7 @@
 // https://babeljs.io/docs/en/babel-types
 // https://doc.esdoc.org/github.com/mason-lang/esast/class/src/ast.js~Property.html
 // https://astexplorer.net/
-import nodePath from 'path'
+import nodePath from 'node:path'
 
 export default ({types: t, /*template*/}, {shortenPath, absPath}: {
 	shortenPath?: string

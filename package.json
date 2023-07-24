@@ -1,6 +1,6 @@
 {
 	"name": "@react-loadable/revised",
-	"version": "1.4.1",
+	"version": "1.5.0",
 	"description": "A higher order component for loading components with promises",
 	"main": "index.js",
 	"author": "Sang Tran <t@sang.jp>",
@@ -9,21 +9,39 @@
 	"files": [
 		"babel.js",
 		"babel.d.ts",
-		"babel.js.map",
 		"webpack.js",
 		"webpack.d.ts",
-		"webpack.js.map",
 		"lib.js",
 		"lib.d.ts",
-		"lib.js.map",
 		"index.js",
 		"index.d.ts",
-		"index.js.map"
+		"esm"
 	],
+	"exports": {
+		".": {
+			"require": "./index.js",
+			"import": "./index.js"
+		},
+		"./babel": {
+			"require": "./babel.js",
+			"import": "./esm/babel.mjs"
+		},
+		"./webpack": {
+			"require": "./webpack.js",
+			"import": "./esm/webpack.mjs"
+		},
+		"./lib": {
+			"require": "./lib.js",
+			"import": "./esm/lib.mjs"
+		}
+	},
 	"scripts": {
 		"test": "jest --coverage",
-		"build": "tsc --downlevelIteration --jsx react-jsx --declaration --sourceMap --esModuleInterop --outDir ./ index.tsx babel.ts lib.ts webpack.ts",
-		"clean": "rm -rf coverage example/dist node_modules/.cache babel.js babel.d.ts babel.js.map webpack.js webpack.d.ts webpack.js.map index.d.ts index.js index.js.map lib.d.ts lib.js lib.js.map",
+		"build": "yarn build:cjs && yarn build:esm && yarn build:rename-esm",
+		"build:cjs": "tsc --target esnext --module commonjs --jsx react-jsx --declaration --inlineSourceMap --esModuleInterop --outDir ./ index.tsx babel.ts lib.ts webpack.ts",
+		"build:esm": "tsc --moduleResolution nodenext --target esnext --module esnext --jsx react-jsx --declaration --inlineSourceMap --esModuleInterop --outDir esm index.tsx babel.ts lib.ts webpack.ts",
+		"build:rename-esm": "for f in esm/*.js; do mv -- \"$f\" \"${f%.js}.mjs\"; done && for f in esm/*.d.ts; do mv -- \"$f\" \"${f%.d.ts}.d.mts\"; done",
+		"clean": "rm -rf esm coverage example/dist node_modules/.cache babel.js babel.d.ts webpack.js webpack.d.ts index.d.ts index.js lib.d.ts lib.js",
 		"start": "webpack --mode=development && node example/dist/server/main.js",
 		"start-4": "yarn add -D webpack@webpack-4 && yarn start",
 		"restore-5": "yarn add -D webpack",

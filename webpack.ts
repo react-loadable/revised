@@ -1,9 +1,9 @@
-import path from 'path'
-import type {Chunk, ChunkGraph, Compiler} from 'webpack'
-import webpack, {Compilation} from 'webpack'
+import path from 'node:path'
+import type {Chunk, Compiler, Compilation} from 'webpack'
+import webpack from 'webpack'
 
 type ChunkGroup = Parameters<typeof Chunk.prototype.addGroup>[0]
-type Entrypoint = Parameters<typeof ChunkGraph.prototype.connectChunkAndEntryModule>[2]
+// type Entrypoint = Parameters<typeof ChunkGraph.prototype.connectChunkAndEntryModule>[2]
 
 const isOriginDynamicImported = (origin: {request: string}, _chunkGroup: ChunkGroup) => {
 	// check if origin is imported via import()
@@ -50,7 +50,7 @@ const buildManifest = (
 		if (chunkGroup.isInitial()) {
 			entryToId[chunkGroup.name] = chunkGroup.id
 			includedChunkGroups.add(chunkGroup.id)
-			runtimeAssets[chunkGroup.id] = [...(chunkGroup as Entrypoint).getRuntimeChunk().files.values()]
+			runtimeAssets[chunkGroup.id] = [...(chunkGroup as any).getRuntimeChunk().files.values()]
 		}
 
 	// get map of origin to chunk groups
@@ -138,7 +138,7 @@ export class ReactLoadablePlugin {
 				compilation.hooks.processAssets.tap(
 					{
 						name: pluginName,
-						stage: Compilation.PROCESS_ASSETS_STAGE_SUMMARIZE,
+						stage: webpack.Compilation.PROCESS_ASSETS_STAGE_SUMMARIZE,
 					},
 					() => emit(compilation)
 				)
